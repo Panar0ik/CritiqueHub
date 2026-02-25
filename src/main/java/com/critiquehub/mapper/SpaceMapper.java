@@ -1,27 +1,28 @@
 package com.critiquehub.mapper;
 
 import org.springframework.stereotype.Component;
-import com.critiquehub.model.Artwork;
-import com.critiquehub.dto.ArtworkDto;
+import com.critiquehub.model.Space;
+import com.critiquehub.dto.SpaceDto;
 
 /**
- * Mapper component used to convert Artwork entities into Data Transfer Objects.
+ * Mapper component used to convert Space entities into Data Transfer Objects.
+ * This ensures internal domain models are not directly exposed to the client.
  */
 @Component
-public class ArtworkMapper {
+public class SpaceMapper {
 
     /**
-     * Converts an Artwork domain model to an ArtworkDto.
+     * Converts a Space domain model to a SpaceDto.
      *
-     * @param artwork the artwork entity to be converted
-     * @return the resulting data transfer object
+     * @param space the community space entity to be converted
+     * @return the resulting data transfer object for the community platform
      */
-    public ArtworkDto toDto(final Artwork artwork) {
-        return new ArtworkDto(
-                artwork.id(),
-                artwork.title(),
-                artwork.category(),
-                artwork.creator()
+    public SpaceDto toDto(final Space space) {
+        return new SpaceDto(
+                space.id(),
+                space.name(),
+                space.description(),
+                space.category()
         );
     }
 }

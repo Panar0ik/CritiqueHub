@@ -1,4 +1,4 @@
 /**
  * Data Transfer Objects for API response consistency.
  */
-package com.animeviewer.dto;
+package com.critiquehub.dto;

@@ -1,4 +1,4 @@
 /**
  * Main package for the Critiquehub application.
  */
-package com.Critiquehub;
+package com.critiquehub;

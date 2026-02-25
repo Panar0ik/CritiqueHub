@@ -1,4 +1,4 @@
 /**
  * REST controllers for handling anime-related HTTP requests.
  */
-package com.animeviewer.controller;
+package com.critiquehub.controller;
