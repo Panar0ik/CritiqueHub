@@ -1,6 +1,6 @@
 # CritiqueHub - Community Spaces API
 
-[![Quality Gate Status]([https://sonarcloud.io/api/project_badges/measure?project=YOUR_PROJECT_KEY&metric=alert_status](https://sonarcloud.io/project/overview?id=Panar0ik_CritiqueHub))]([https://sonarcloud.io/summary/new_code?id=YOUR_PROJECT_KEY](https://sonarcloud.io/summary/new_code?id=Panar0ik_CritiqueHub&branch=main))
+Quality Gate Status https://sonarcloud.io/summary/new_code?id=Panar0ik_CritiqueHub&branch=main
 
 CritiqueHub is a Spring Boot-based RESTful service designed for managing interest-based communities (Spaces) and facilitating communication through integrated messaging.
 
