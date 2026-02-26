@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.critiquehub.dto.SpaceDto;
 import com.critiquehub.model.ChatMessage;
@@ -24,8 +23,16 @@ import java.util.List;
 public class SpaceController {
 
     /** The service layer for community space logic. */
-    @Autowired
-    private SpaceService spaceService;
+    private final SpaceService spaceService;
+
+    /**
+     * Constructs a new SpaceController.
+     *
+     * @param spaceServiceParam the service layer for community space logic
+     */
+    public SpaceController(final SpaceService spaceServiceParam) {
+        this.spaceService = spaceServiceParam;
+    }
 
     /**
      * Retrieves all available interest groups (spaces).

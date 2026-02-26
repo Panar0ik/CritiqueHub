@@ -1,19 +1,15 @@
 package com.critiquehub.service;
 
-import com.critiquehub.model.Space;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.critiquehub.dto.SpaceDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.ChatMessage;
+import com.critiquehub.model.Space;
 import com.critiquehub.repository.CommunityRepository;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service class for handling community spaces and chat message business logic.
@@ -22,12 +18,24 @@ import java.util.stream.Collectors;
 public class SpaceService {
 
     /** The repository for accessing community and message data. */
-    @Autowired
-    private CommunityRepository communityRepository;
+    private final CommunityRepository communityRepository;
 
     /** The mapper for converting Space entities to DTOs. */
-    @Autowired
-    private SpaceMapper spaceMapper;
+    private final SpaceMapper spaceMapper;
+
+    /**
+     * Constructs a new SpaceService with required dependencies.
+     *
+     * @param communityRepo the repository for community data
+     * @param mapper the mapper for DTO conversion
+     */
+    public SpaceService(
+            final CommunityRepository communityRepo,
+            final SpaceMapper mapper
+    ) {
+        this.communityRepository = communityRepo;
+        this.spaceMapper = mapper;
+    }
 
     /**
      * Retrieves all community spaces and converts them to DTOs.
@@ -37,7 +45,7 @@ public class SpaceService {
     public List<SpaceDto> getAllSpaces() {
         return communityRepository.findAllSpaces().stream()
                 .map(spaceMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -66,7 +74,7 @@ public class SpaceService {
         return communityRepository.findAllSpaces().stream()
                 .filter(space -> space.category().equalsIgnoreCase(category))
                 .map(spaceMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -77,7 +85,6 @@ public class SpaceService {
      * @throws ResponseStatusException if the space is not found
      */
     public final void postMessage(final Long id, final ChatMessage message) {
-        // 1. Сначала обращаемся к space
         final Space space = communityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
