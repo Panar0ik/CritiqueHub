@@ -4,122 +4,69 @@ import com.critiquehub.dto.SpaceDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.ChatMessage;
 import com.critiquehub.model.Space;
-import com.critiquehub.repository.CommunityRepository;
-import java.util.ArrayList;
-import java.util.List;
+import com.critiquehub.repository.SpaceRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service class for handling community spaces and chat message business logic.
- */
+import java.util.List;
+
 @Service
 public class SpaceService {
 
-    /** The repository for accessing community and message data. */
-    private final CommunityRepository communityRepository;
-
-    /** The mapper for converting Space entities to DTOs. */
+    private final SpaceRepository spaceRepository;
     private final SpaceMapper spaceMapper;
 
-    /**
-     * Constructs a new SpaceService with required dependencies.
-     *
-     * @param communityRepo the repository for community data
-     * @param mapper the mapper for DTO conversion
-     */
     public SpaceService(
-            final CommunityRepository communityRepo,
-            final SpaceMapper mapper
+            final SpaceRepository spaceRepoParam,
+            final SpaceMapper mapperParam
     ) {
-        this.communityRepository = communityRepo;
-        this.spaceMapper = mapper;
+        this.spaceRepository = spaceRepoParam;
+        this.spaceMapper = mapperParam;
     }
 
-    /**
-     * Retrieves all community spaces and converts them to DTOs.
-     *
-     * @return a list of all available spaces as DTO objects
-     */
     public List<SpaceDto> getAllSpaces() {
-        return communityRepository.findAllSpaces().stream()
+        return spaceRepository.findAll().stream()
                 .map(spaceMapper::toDto)
                 .toList();
     }
 
-    /**
-     * Retrieves a community space by its ID and converts it to a DTO.
-     *
-     * @param id the unique identifier of the space
-     * @return the space data transfer object
-     * @throws ResponseStatusException if the space is not found
-     */
-    public SpaceDto getSpaceById(final Long id) {
-        return communityRepository.findById(id)
+    public SpaceDto getSpaceById(final Long idParam) {
+        return spaceRepository.findById(idParam)
                 .map(spaceMapper::toDto)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Space not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    /**
-     * Filters spaces by a given category.
-     *
-     * @param category the category string to match
-     * @return a list of filtered spaces
-     */
-    public List<SpaceDto> getSpacesByCategory(final String category) {
-        return communityRepository.findAllSpaces().stream()
-                .filter(space -> space.category().equalsIgnoreCase(category))
-                .map(spaceMapper::toDto)
-                .toList();
+    @Transactional
+    public void postMessage(final Long idParam, final ChatMessage messageParam) {
+        Space space = spaceRepository.findById(idParam)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        space.addMessage(messageParam);
     }
 
-    /**
-     * Finds the space by ID and adds a message to its internal collection.
-     *
-     * @param id      the identifier of the space
-     * @param message the chat message to be added
-     * @throws ResponseStatusException if the space is not found
-     */
-    public final void postMessage(final Long id, final ChatMessage message) {
-        final Space space = communityRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Space not found"
-                ));
-
-        space.addMessage(message);
+    public List<ChatMessage> getMessagesBySpace(final Long idParam) {
+        return spaceRepository.findById(idParam)
+                .map(Space::getMessages)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    /**
-     * Retrieves all messages associated with a specific space.
-     *
-     * @param spaceId the ID of the space
-     * @return a list of messages for the given space
-     */
-    public List<ChatMessage> getMessagesBySpace(final Long spaceId) {
-        return communityRepository.findById(spaceId)
-                .map(Space::messages)
-                .orElse(new ArrayList<>());
+    public void createSpace(final SpaceDto dtoParam) {
+        Space space = new Space();
+        space.setName(dtoParam.name());
+        space.setCategory(dtoParam.category());
+        spaceRepository.save(space);
     }
 
-    /**
-     * Creates and saves a new community space.
-     *
-     * @param spaceDto the data transfer object containing space details
-     */
-    public final void createSpace(final SpaceDto spaceDto) {
-        final Space newSpace = new Space(
-                spaceDto.id(),
-                spaceDto.name(),
-                spaceDto.description(),
-                spaceDto.category(),
-                new ArrayList<>()
-        );
+    public void deleteSpace(final Long idParam) {
+        spaceRepository.deleteById(idParam);
+    }
 
-        communityRepository.save(newSpace);
+    @Transactional
+    public void demonstrateTransaction() {
+        Space s1 = new Space();
+        s1.setName("Transaction Test");
+        spaceRepository.save(s1);
     }
 }
