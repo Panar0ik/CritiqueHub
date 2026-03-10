@@ -1,5 +1,6 @@
 package com.critiquehub.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +26,7 @@ public class ChatMessage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "space_id")
+    @JsonIgnore
     private Space space;
 
     @ManyToOne(fetch = FetchType.LAZY)

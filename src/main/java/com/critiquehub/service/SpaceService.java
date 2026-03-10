@@ -55,6 +55,7 @@ public class SpaceService {
     public void createSpace(final SpaceDto dtoParam) {
         Space space = new Space();
         space.setName(dtoParam.name());
+        space.setDescription(dtoParam.description());
         space.setCategory(dtoParam.category());
         spaceRepository.save(space);
     }

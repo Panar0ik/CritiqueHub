@@ -57,7 +57,6 @@ public class SpaceController {
 
     @PostMapping("/test-transactional")
     public void testTransaction() {
-        // Пункт 6: Метод для демонстрации отката транзакции
         spaceService.demonstrateTransaction();
     }
 }

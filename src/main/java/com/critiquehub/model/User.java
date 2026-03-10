@@ -20,7 +20,6 @@ public class User {
 
     public User() { }
 
-    // Добавь эти методы:
     public Long getId() {
         return id;
     }
@@ -36,5 +35,8 @@ public class User {
     }
     public void setProfile(final UserProfile profileParam) {
         this.profile = profileParam;
+        if (profile != null) {
+            profile.setUser(this); // Это заполнит FK user_id в базе
+        }
     }
 }
