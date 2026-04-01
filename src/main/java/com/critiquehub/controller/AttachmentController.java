@@ -1,7 +1,7 @@
 package com.critiquehub.controller;
 
+import com.critiquehub.dto.AttachmentRequestDto;
 import com.critiquehub.dto.AttachmentResponseDto;
-import com.critiquehub.dto.MessageShortDto;
 import com.critiquehub.service.AttachmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,11 +28,8 @@ public class AttachmentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AttachmentResponseDto create(
-            final @RequestParam String filePath,
-            final @RequestBody MessageShortDto messageDto) {
-
-        return attachmentService.saveAttachment(filePath, messageDto.id());
+    public AttachmentResponseDto create(final @RequestBody AttachmentRequestDto requestDto) {
+        return attachmentService.saveAttachment(requestDto.url(), requestDto.messageId());
     }
 
     @GetMapping("/message/{messageId}")
