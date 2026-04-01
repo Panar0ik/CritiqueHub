@@ -1,4 +1,4 @@
 package com.critiquehub.mapper;
 
-public class SpaceMapper {
+public class AttachmentMapper {
 }

@@ -1,4 +1,4 @@
 package com.critiquehub.model;
 
-public class User {
+public class Message {
 }

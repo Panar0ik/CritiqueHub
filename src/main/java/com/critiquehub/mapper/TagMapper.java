@@ -1,4 +1,4 @@
 package com.critiquehub.mapper;
 
-public class ChatMessageMapper {
+public class TagMapper {
 }

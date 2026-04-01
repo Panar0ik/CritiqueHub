@@ -1,4 +1,4 @@
 package com.critiquehub.service;
 
-public class SpaceService {
+public class TagService {
 }

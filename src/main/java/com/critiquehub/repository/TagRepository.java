@@ -1,4 +1,4 @@
 package com.critiquehub.repository;
 
-public interface UserRepository {
+public interface TagRepository {
 }

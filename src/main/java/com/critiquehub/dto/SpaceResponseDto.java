@@ -1,4 +1,4 @@
 package com.critiquehub.dto;
 
-public class ChatMessageDto {
+public class SpaceResponseDto {
 }

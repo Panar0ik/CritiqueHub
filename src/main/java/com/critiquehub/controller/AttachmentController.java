@@ -1,4 +1,4 @@
 package com.critiquehub.controller;
 
-public class UserController {
+public class AttachmentController {
 }
