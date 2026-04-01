@@ -1,5 +1,7 @@
 package com.critiquehub.controller;
 
+import com.critiquehub.dto.TagDto;
+import com.critiquehub.mapper.TagMapper;
 import com.critiquehub.model.Tag;
 import com.critiquehub.service.TagService;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +25,14 @@ import java.util.List;
 public class TagController {
 
     private final TagService tagService;
+    private final TagMapper tagMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Tag create(final @RequestBody String name) {
-        return tagService.saveTag(name);
+    public TagDto createTag(final @RequestBody TagDto tagDto) {
+        Tag savedTag = tagService.saveTag(tagDto);
+
+        return tagMapper.toDto(savedTag);
     }
 
     @GetMapping

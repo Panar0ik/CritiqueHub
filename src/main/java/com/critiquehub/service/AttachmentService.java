@@ -4,7 +4,9 @@ import com.critiquehub.dto.AttachmentResponseDto;
 import com.critiquehub.mapper.AttachmentMapper;
 import com.critiquehub.model.Attachment;
 import com.critiquehub.repository.AttachmentRepository;
+import com.critiquehub.repository.MessageRepository;
 import com.critiquehub.model.Message;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +19,19 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
     private final AttachmentMapper attachmentMapper;
+    private final MessageRepository messageRepository;
 
     @Transactional
-    public AttachmentResponseDto saveAttachment(final String filePath, final Message message) {
+    public AttachmentResponseDto saveAttachment(final String filePath, final Long messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Message not found"));
+
         Attachment attachment = new Attachment();
         attachment.setUrl(filePath);
         attachment.setMessage(message);
 
-        return attachmentMapper.toDto(attachmentRepository.save(attachment));
+        Attachment saved = attachmentRepository.save(attachment);
+        return attachmentMapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)

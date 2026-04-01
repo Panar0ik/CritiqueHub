@@ -46,7 +46,7 @@ public class MessageMapper {
         }
 
         Message message = new Message();
-        message.setText(dto.Text());
+        message.setText(dto.text());
         return message;
     }
 }

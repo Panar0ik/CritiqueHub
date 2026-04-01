@@ -1,5 +1,6 @@
 package com.critiquehub.service;
 
+import com.critiquehub.dto.TagDto;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.model.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,13 @@ public class TagService {
     }
 
     @Transactional
-    public Tag saveTag(final String name) {
-        return tagRepository.findByName(name)
+    public Tag saveTag(final TagDto tagDto) {
+        String cleanName = tagDto.name();
+
+        return tagRepository.findByName(cleanName)
                 .orElseGet(() -> {
                     Tag tag = new Tag();
-                    tag.setName(name);
+                    tag.setName(cleanName);
                     return tagRepository.save(tag);
                 });
     }
@@ -40,7 +43,6 @@ public class TagService {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tag not found with id: " + id));
 
-        // Проверяем, не занято ли имя другим тегом
         tagRepository.findByName(newName).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
                 throw new RuntimeException("Tag with name '" + newName + "' already exists");

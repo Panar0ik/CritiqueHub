@@ -5,7 +5,7 @@ import java.util.List;
 
 public record MessageResponseDto(
         Long id,
-        String content,
+        String text,
         LocalDateTime timestamp,
         String authorName,
         List<AttachmentResponseDto> attachments

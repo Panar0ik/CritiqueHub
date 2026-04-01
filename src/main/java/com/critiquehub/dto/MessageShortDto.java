@@ -1,4 +1,5 @@
 package com.critiquehub.dto;
 
-public class MessageShortDto {
-}
+public record MessageShortDto(
+        Long id
+) { }
