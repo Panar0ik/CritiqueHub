@@ -1,4 +1,7 @@
 package com.critiquehub.dto;
 
-public class MessageDto {
-}
+public record MessageCreateDto(
+        String Text,
+        Long userId,
+        Long spaceId
+) { }

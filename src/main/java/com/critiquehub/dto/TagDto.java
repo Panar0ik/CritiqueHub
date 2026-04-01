@@ -1,4 +1,6 @@
 package com.critiquehub.dto;
 
-public class TagDto {
-}
+public record TagDto(
+        Long id,
+        String name
+) { }

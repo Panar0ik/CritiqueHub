@@ -1,4 +1,7 @@
 package com.critiquehub.dto;
 
-public class UserCreateDto {
-}
+public record UserCreateDto(
+        String username,
+        String email,
+        String password
+) { }

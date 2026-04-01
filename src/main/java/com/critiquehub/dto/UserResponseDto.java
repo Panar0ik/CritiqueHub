@@ -1,4 +1,7 @@
 package com.critiquehub.dto;
 
-public class UserResponseDto {
-}
+public record UserResponseDto(
+        Long id,
+        String username,
+        String email
+) { }

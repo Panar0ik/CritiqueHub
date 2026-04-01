@@ -1,6 +1,6 @@
 package com.critiquehub.dto;
 
 public record AttachmentResponseDto(
-        Long id,
-        String filePath
-) {}
+    Long id,
+    String url
+) { }
