@@ -1,4 +1,4 @@
-package com.critiquehub.dto;
+package com.critiquehub.dto.TagDto;
 
 public record TagDto(
         Long id,

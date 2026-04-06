@@ -1,11 +1,10 @@
-package com.critiquehub.dto;
+package com.critiquehub.dto.SpaceDto;
 
 import java.util.Set;
 
-public record SpaceResponseDto(
-        Long id,
+public record SpaceCreateDto(
         String name,
         String description,
-        String ownerUsername,
+        Long ownerId,
         Set<String> tagNames
 ) { }

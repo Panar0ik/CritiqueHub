@@ -1,7 +1,7 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.SpaceCreateDto;
-import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.SpaceDto.SpaceCreateDto;
+import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.Space;
 import com.critiquehub.model.Tag;

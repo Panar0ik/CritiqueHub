@@ -1,7 +1,7 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.SpaceCreateDto;
-import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.SpaceDto.SpaceCreateDto;
+import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
 import com.critiquehub.service.SpaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

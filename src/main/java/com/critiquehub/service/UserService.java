@@ -1,21 +1,26 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.UserCreateDto;
-import com.critiquehub.dto.UserResponseDto;
+import com.critiquehub.dto.UserDto.UserCreateDto;
+import com.critiquehub.dto.UserDto.UserResponseDto;
 import com.critiquehub.mapper.UserMapper;
+import com.critiquehub.model.Space;
 import com.critiquehub.model.User;
+import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final SpaceRepository spaceRepository;
     private final UserMapper userMapper;
 
     @Transactional
@@ -67,5 +72,35 @@ public class UserService {
             throw new RuntimeException("User not found");
         }
         userRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Space> getUserFavorites(final Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+
+        return user.getFavoriteSpaces();
+    }
+
+    @Transactional
+    public void addSpaceToFavorites(final Long userId, final Long spaceId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new EntityNotFoundException("Space not found"));
+
+        user.getFavoriteSpaces().add(space);
+    }
+
+    @Transactional
+    public void removeSpaceFromFavorites(final Long userId, final Long spaceId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new EntityNotFoundException("Пространство не найдено"));
+
+        user.getFavoriteSpaces().remove(space);
+        userRepository.save(user);
     }
 }

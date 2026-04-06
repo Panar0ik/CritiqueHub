@@ -1,7 +1,9 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.UserCreateDto;
-import com.critiquehub.dto.UserResponseDto;
+import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
+import com.critiquehub.dto.UserDto.UserCreateDto;
+import com.critiquehub.dto.UserDto.UserResponseDto;
+import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final SpaceMapper spaceMapper;
 
     @PostMapping
     public ResponseEntity<UserResponseDto> createUser(final @RequestBody UserCreateDto dto) {
@@ -49,5 +52,24 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(final @PathVariable Long id) {
         userService.deleteUser(id);
+    }
+
+    @PostMapping("/{userId}/favorites/{spaceId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addFavorite(final @PathVariable Long userId, final @PathVariable Long spaceId) {
+        userService.addSpaceToFavorites(userId, spaceId);
+    }
+
+    @GetMapping("/{userId}/favorites")
+    public List<SpaceResponseDto> getFavorites(final @PathVariable Long userId) {
+        return userService.getUserFavorites(userId).stream()
+                .map(spaceMapper::toDto)
+                .toList();
+    }
+
+    @DeleteMapping("/{userId}/favorites/{spaceId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavorite(final @PathVariable Long userId, final @PathVariable Long spaceId) {
+        userService.removeSpaceFromFavorites(userId, spaceId);
     }
 }

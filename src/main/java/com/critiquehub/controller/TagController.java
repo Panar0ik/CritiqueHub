@@ -1,6 +1,6 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.TagDto;
+import com.critiquehub.dto.TagDto.TagDto;
 import com.critiquehub.mapper.TagMapper;
 import com.critiquehub.model.Tag;
 import com.critiquehub.service.TagService;

@@ -1,4 +1,4 @@
-package com.critiquehub.dto;
+package com.critiquehub.dto.MessageDto;
 
 public record MessageCreateDto(
         String text,

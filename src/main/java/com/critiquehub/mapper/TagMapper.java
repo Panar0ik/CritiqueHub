@@ -1,6 +1,6 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.TagDto;
+import com.critiquehub.dto.TagDto.TagDto;
 import com.critiquehub.model.Tag;
 import org.springframework.stereotype.Component;
 

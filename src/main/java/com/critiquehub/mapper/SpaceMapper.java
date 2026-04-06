@@ -1,6 +1,6 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
 import com.critiquehub.model.Space;
 import com.critiquehub.model.Tag;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.AttachmentRequestDto;
-import com.critiquehub.dto.AttachmentResponseDto;
+import com.critiquehub.dto.AttachmentDto.AttachmentRequestDto;
+import com.critiquehub.dto.AttachmentDto.AttachmentResponseDto;
 import com.critiquehub.service.AttachmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;

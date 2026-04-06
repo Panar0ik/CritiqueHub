@@ -1,4 +1,4 @@
-package com.critiquehub.dto;
+package com.critiquehub.dto.UserDto;
 
 public record UserResponseDto(
         Long id,
