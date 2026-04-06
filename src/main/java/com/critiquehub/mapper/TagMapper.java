@@ -21,11 +21,11 @@ public class TagMapper {
             return null;
         }
 
-        List<SpaceResponseDto> spaceDtos = tag.getSpaces().stream()
+        List<SpaceResponseDto> spaceDto = tag.getSpaces().stream()
                 .map(spaceMapper::toDto)
                 .toList();
 
-        return new TagDto(tag.getId(), tag.getName(), spaceDtos);
+        return new TagDto(tag.getId(), tag.getName(), spaceDto);
     }
 
     public Tag toEntity(final TagDto dto) {
