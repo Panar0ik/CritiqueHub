@@ -44,8 +44,7 @@ public class MessageService {
 
     @Transactional
     public List<MessageResponseDto> getMessagesBySpace(final Long spaceId) {
-        return messageRepository.findAll().stream()
-                .filter(m -> m.getSpace().getId().equals(spaceId))
+        return messageRepository.findBySpaceId(spaceId).stream()
                 .map(messageMapper::toDto)
                 .toList();
     }

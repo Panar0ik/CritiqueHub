@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    @EntityGraph(attributePaths = {"attachments", "tags"})
-    List<Message> findAllBySpaceId(Long spaceId);
+    @EntityGraph(attributePaths = {"user", "attachments"})
+    List<Message> findBySpaceId(Long spaceId);
 }

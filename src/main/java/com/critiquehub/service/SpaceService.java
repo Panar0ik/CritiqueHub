@@ -38,7 +38,6 @@ public class SpaceService {
         space.setOwner(owner);
 
         space.setTags(mapTagNamesToEntities(dto.tagNames()));
-
         return spaceMapper.toDto(spaceRepository.save(space));
     }
 

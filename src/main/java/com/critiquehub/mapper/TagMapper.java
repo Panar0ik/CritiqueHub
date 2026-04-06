@@ -1,7 +1,9 @@
 package com.critiquehub.mapper;
 
+import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
 import com.critiquehub.dto.TagDto.TagDto;
 import com.critiquehub.model.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,17 +11,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class TagMapper {
+
+    private final SpaceMapper spaceMapper;
 
     public TagDto toDto(final Tag tag) {
         if (tag == null) {
             return null;
         }
 
-        return new TagDto(
-                tag.getId(),
-                tag.getName()
-        );
+        List<SpaceResponseDto> spaceDtos = tag.getSpaces().stream()
+                .map(spaceMapper::toDto)
+                .toList();
+
+        return new TagDto(tag.getId(), tag.getName(), spaceDtos);
     }
 
     public Tag toEntity(final TagDto dto) {

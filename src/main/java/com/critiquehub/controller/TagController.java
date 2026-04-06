@@ -41,8 +41,9 @@ public class TagController {
     }
 
     @GetMapping("/search")
-    public Tag getByName(final @RequestParam String name) {
-        return tagService.getByName(name);
+    public TagDto getByName(final @RequestParam String name) {
+        Tag tag = tagService.getByName(name);
+        return tagMapper.toDto(tag);
     }
 
     @PutMapping("/{id}")
