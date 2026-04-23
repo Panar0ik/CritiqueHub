@@ -6,8 +6,6 @@ public record SpaceCacheKey(
         int pageSize
 ) {
     public SpaceCacheKey {
-        if (tagName == null) {
-            tagName = ""; // Or handle as needed
-        }
+            tagName = (tagName == null) ? "" : tagName.toLowerCase().trim();
     }
 }

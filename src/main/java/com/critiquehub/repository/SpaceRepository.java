@@ -19,7 +19,7 @@ import java.util.Optional;
 public interface SpaceRepository extends JpaRepository<Space, Long> {
     @Override
     @NonNull
-    @EntityGraph(attributePaths = {"ow  ner", "tags"})
+    @EntityGraph(attributePaths = {"owner", "tags"})
     List<Space> findAll();
 
     @EntityGraph(attributePaths = {"owner", "tags"})

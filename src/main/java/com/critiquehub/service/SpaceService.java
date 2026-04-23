@@ -44,7 +44,8 @@ public class SpaceService {
         space.setTags(mapTagNamesToEntities(dto.tagNames()));
 
         SpaceResponseDto saved = spaceMapper.toDto(spaceRepository.save(space));
-        spaceCacheService.evictCache();
+        dto.tagNames().forEach(spaceCacheService::evictAllPagesForTag);
+
         return saved;
     }
 
@@ -67,22 +68,32 @@ public class SpaceService {
         Space existingSpace = spaceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Space not found"));
 
+        Set<String> oldTags = existingSpace.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toSet());
+
         existingSpace.setName(dto.name());
         existingSpace.setDescription(dto.description());
         existingSpace.setTags(mapTagNamesToEntities(dto.tagNames()));
 
         SpaceResponseDto updated = spaceMapper.toDto(spaceRepository.save(existingSpace));
-        spaceCacheService.evictCache();
+
+        oldTags.forEach(spaceCacheService::evictAllPagesForTag);
+        dto.tagNames().forEach(spaceCacheService::evictAllPagesForTag);
+
         return updated;
     }
 
     @Transactional
     public void deleteSpace(final Long id) {
-        if (!spaceRepository.existsById(id)) {
-            throw new EntityNotFoundException("Cannot delete: Space not found");
-        }
-        spaceRepository.deleteById(id);
-        spaceCacheService.evictCache();
+        Space space = spaceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cannot delete: Space not found"));
+        Set<String> tagsToEvict = space.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toSet());
+
+        spaceRepository.delete(space);
+        tagsToEvict.forEach(spaceCacheService::evictAllPagesForTag);
     }
 
     @Transactional(readOnly = true)

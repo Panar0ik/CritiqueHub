@@ -29,9 +29,11 @@ public class SpaceCacheService {
         });
     }
 
-    public void evictCache() {
-        log.info("Cache eviction: Data has been modified.");
-        cache.clear();
+    public void evictAllPagesForTag(final String tagName) {
+        if (tagName == null) {
+            return;
+        }
+        log.info("Clear cache for tags: {}", tagName);
+        cache.keySet().removeIf(key -> tagName.equals(key.tagName()));
     }
-
 }

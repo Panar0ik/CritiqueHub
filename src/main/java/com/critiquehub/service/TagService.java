@@ -1,8 +1,11 @@
 package com.critiquehub.service;
 
 import com.critiquehub.dto.TagDto;
+import com.critiquehub.model.Space;
+import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.model.Tag;
+import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,8 @@ import java.util.List;
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final SpaceRepository spaceRepository;
+    private final SpaceCacheService spaceCacheService;
 
     @Transactional(readOnly = true)
     public List<Tag> getAllTags() {
@@ -56,6 +61,16 @@ public class TagService {
 
     @Transactional
     public void deleteTag(final Long id) {
-        tagRepository.deleteById(id);
+        Tag tag = tagRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
+
+        List<Space> spacesWithTag = spaceRepository.findByTags(tag);
+
+        for (Space space : spacesWithTag) {
+            space.getTags().remove(tag);
+            spaceCacheService.evictAllPagesForTag(tag.getName());
+        }
+
+        tagRepository.delete(tag);
     }
 }
