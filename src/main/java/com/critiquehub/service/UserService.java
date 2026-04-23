@@ -45,17 +45,17 @@ public class UserService {
     public UserResponseDto findById(final Long id) {
         return userRepository.findById(id)
                 .map(userMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
     @Transactional
     public UserResponseDto updateUser(final Long id, final UserCreateDto dto) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         if (!existingUser.getUsername().equals(dto.username())
                 && userRepository.existsByUsername(dto.username())) {
-            throw new RuntimeException("Username '" + dto.username() + "' is already taken");
+            throw new EntityNotFoundException("Username '" + dto.username() + "' is already taken");
         }
 
         existingUser.setUsername(dto.username());
@@ -69,7 +69,7 @@ public class UserService {
     @Transactional
     public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new EntityNotFoundException("User not found");
         }
         userRepository.deleteById(id);
     }
@@ -77,7 +77,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public Set<Space> getUserFavorites(final Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         return user.getFavoriteSpaces();
     }

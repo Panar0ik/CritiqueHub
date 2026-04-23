@@ -9,8 +9,10 @@ import com.critiquehub.model.User;
 import com.critiquehub.repository.MessageRepository;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,10 +29,10 @@ public class MessageService {
     @Transactional
     public MessageResponseDto sendMessage(final MessageCreateDto dto) {
         User user = userRepository.findById(dto.userId())
-                .orElseThrow(() -> new RuntimeException("User not found with id " + dto.userId()));
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id " + dto.userId()));
 
         Space space = spaceRepository.findById(dto.spaceId())
-                .orElseThrow(() -> new RuntimeException("Space not found with id " + dto.spaceId()));
+                .orElseThrow(() -> new EntityNotFoundException("Space not found with id " + dto.spaceId()));
 
         Message message = messageMapper.toEntity(dto);
 
@@ -52,7 +54,7 @@ public class MessageService {
     @Transactional
     public MessageResponseDto updateMessage(final Long id, final String newContent) {
         Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Message not found with id " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Message not found with id " + id));
 
         message.setText(newContent);
 
@@ -62,7 +64,7 @@ public class MessageService {
     @Transactional
     public void deleteMessage(final Long id) {
         if (!messageRepository.existsById(id)) {
-            throw new RuntimeException("Message not found with id " + id);
+            throw new EntityNotFoundException("Message not found with id " + id);
         }
         messageRepository.deleteById(id);
     }

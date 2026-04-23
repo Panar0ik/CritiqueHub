@@ -3,6 +3,7 @@ package com.critiquehub.service;
 import com.critiquehub.dto.TagDto;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.model.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class TagService {
     @Transactional(readOnly = true)
     public Tag getByName(final String name) {
         return tagRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Tag not found: " + name));
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found: " + name));
     }
 
     @Transactional
@@ -41,11 +42,11 @@ public class TagService {
     @Transactional
     public Tag updateTagName(final Long id, final String newName) {
         Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tag not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Tag not found with id: " + id));
 
         tagRepository.findByName(newName).ifPresent(existing -> {
             if (!existing.getId().equals(id)) {
-                throw new RuntimeException("Tag with name '" + newName + "' already exists");
+                throw new EntityNotFoundException("Tag with name '" + newName + "' already exists");
             }
         });
 
