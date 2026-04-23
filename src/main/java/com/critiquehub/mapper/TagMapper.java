@@ -1,7 +1,7 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
-import com.critiquehub.dto.TagDto.TagDto;
+import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.TagDto;
 import com.critiquehub.model.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

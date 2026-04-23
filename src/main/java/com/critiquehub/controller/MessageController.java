@@ -1,7 +1,7 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.MessageDto.MessageCreateDto;
-import com.critiquehub.dto.MessageDto.MessageResponseDto;
+import com.critiquehub.dto.MessageCreateDto;
+import com.critiquehub.dto.MessageResponseDto;
 import com.critiquehub.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

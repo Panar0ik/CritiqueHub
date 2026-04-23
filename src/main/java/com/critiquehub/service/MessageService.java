@@ -1,7 +1,7 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.MessageDto.MessageCreateDto;
-import com.critiquehub.dto.MessageDto.MessageResponseDto;
+import com.critiquehub.dto.MessageCreateDto;
+import com.critiquehub.dto.MessageResponseDto;
 import com.critiquehub.mapper.MessageMapper;
 import com.critiquehub.model.Message;
 import com.critiquehub.model.Space;

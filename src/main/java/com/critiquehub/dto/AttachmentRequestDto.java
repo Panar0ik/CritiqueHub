@@ -1,4 +1,4 @@
-package com.critiquehub.dto.AttachmentDto;
+package com.critiquehub.dto;
 
 public record AttachmentRequestDto(
         String url,

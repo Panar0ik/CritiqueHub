@@ -1,6 +1,4 @@
-package com.critiquehub.dto.TagDto;
-
-import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
+package com.critiquehub.dto;
 
 import java.util.List;
 

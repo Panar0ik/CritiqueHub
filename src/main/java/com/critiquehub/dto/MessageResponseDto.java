@@ -1,6 +1,4 @@
-package com.critiquehub.dto.MessageDto;
-
-import com.critiquehub.dto.AttachmentDto.AttachmentResponseDto;
+package com.critiquehub.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

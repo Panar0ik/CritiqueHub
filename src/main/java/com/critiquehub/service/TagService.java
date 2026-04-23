@@ -1,6 +1,6 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.TagDto.TagDto;
+import com.critiquehub.dto.TagDto;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.model.Tag;
 import lombok.RequiredArgsConstructor;

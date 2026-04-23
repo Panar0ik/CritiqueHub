@@ -1,4 +1,4 @@
-package com.critiquehub.dto.UserDto;
+package com.critiquehub.dto;
 
 public record UserCreateDto(
         String username,

@@ -1,4 +1,4 @@
-package com.critiquehub.dto.SpaceDto;
+package com.critiquehub.dto;
 
 import java.util.Set;
 

@@ -1,6 +1,6 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.AttachmentDto.AttachmentResponseDto;
+import com.critiquehub.dto.AttachmentResponseDto;
 import com.critiquehub.mapper.AttachmentMapper;
 import com.critiquehub.model.Attachment;
 import com.critiquehub.repository.AttachmentRepository;

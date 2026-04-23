@@ -1,7 +1,7 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.UserDto.UserCreateDto;
-import com.critiquehub.dto.UserDto.UserResponseDto;
+import com.critiquehub.dto.UserCreateDto;
+import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.mapper.UserMapper;
 import com.critiquehub.model.Space;
 import com.critiquehub.model.User;

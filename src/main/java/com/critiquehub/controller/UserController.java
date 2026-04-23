@@ -1,8 +1,8 @@
 package com.critiquehub.controller;
 
-import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
-import com.critiquehub.dto.UserDto.UserCreateDto;
-import com.critiquehub.dto.UserDto.UserResponseDto;
+import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.UserCreateDto;
+import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.service.UserService;
 import lombok.RequiredArgsConstructor;

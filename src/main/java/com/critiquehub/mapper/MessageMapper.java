@@ -1,8 +1,8 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.AttachmentDto.AttachmentResponseDto;
-import com.critiquehub.dto.MessageDto.MessageCreateDto;
-import com.critiquehub.dto.MessageDto.MessageResponseDto;
+import com.critiquehub.dto.AttachmentResponseDto;
+import com.critiquehub.dto.MessageCreateDto;
+import com.critiquehub.dto.MessageResponseDto;
 import com.critiquehub.model.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

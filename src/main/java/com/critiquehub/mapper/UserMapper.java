@@ -1,7 +1,7 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.UserDto.UserCreateDto;
-import com.critiquehub.dto.UserDto.UserResponseDto;
+import com.critiquehub.dto.UserCreateDto;
+import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.model.User;
 import org.springframework.stereotype.Component;
 

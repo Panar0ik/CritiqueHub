@@ -1,6 +1,6 @@
 package com.critiquehub.mapper;
 
-import com.critiquehub.dto.AttachmentDto.AttachmentResponseDto;
+import com.critiquehub.dto.AttachmentResponseDto;
 import com.critiquehub.model.Attachment;
 import org.springframework.stereotype.Component;
 
