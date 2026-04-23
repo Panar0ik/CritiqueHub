@@ -8,9 +8,11 @@ import com.critiquehub.model.User;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Set;
@@ -25,9 +27,11 @@ public class UserService {
 
     @Transactional
     public UserResponseDto createUser(final UserCreateDto dto) {
-        // Проверка на уникальность username, чтобы не упасть с ошибкой базы
         if (userRepository.existsByUsername(dto.username())) {
-            throw new RuntimeException("Username '" + dto.username() + "' is already taken");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Username '" + dto.username() + "' is already taken"
+            );
         }
 
         User user = userMapper.toEntity(dto);

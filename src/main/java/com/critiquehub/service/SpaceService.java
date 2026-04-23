@@ -10,6 +10,7 @@ import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.repository.UserRepository;
 import com.critiquehub.util.cache.SpaceCacheService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -78,7 +79,7 @@ public class SpaceService {
     @Transactional
     public void deleteSpace(final Long id) {
         if (!spaceRepository.existsById(id)) {
-            throw new RuntimeException("Cannot delete: Space not found");
+            throw new EntityNotFoundException("Cannot delete: Space not found");
         }
         spaceRepository.deleteById(id);
         spaceCacheService.evictCache();
