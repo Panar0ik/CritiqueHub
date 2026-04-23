@@ -3,7 +3,11 @@ package com.critiquehub.controller;
 import com.critiquehub.dto.SpaceDto.SpaceCreateDto;
 import com.critiquehub.dto.SpaceDto.SpaceResponseDto;
 import com.critiquehub.service.SpaceService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,12 +28,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SpaceController {
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
     private final SpaceService spaceService;
 
     @PostMapping
-    public ResponseEntity<SpaceResponseDto> create(final @RequestBody SpaceCreateDto dto) {
-        SpaceResponseDto createdSpace = spaceService.createSpace(dto);
-        return new ResponseEntity<>(createdSpace, HttpStatus.CREATED);
+    public ResponseEntity<SpaceResponseDto> create(final @Valid @RequestBody SpaceCreateDto dto) {
+        SpaceResponseDto created = spaceService.createSpace(dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
@@ -39,6 +47,14 @@ public class SpaceController {
     @GetMapping("/{id}")
     public SpaceResponseDto getById(final @PathVariable Long id) {
         return spaceService.getById(id);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<SpaceResponseDto>> search(
+            final @RequestParam String tag,
+            final @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable
+    ) {
+        return ResponseEntity.ok(spaceService.getSpacesByTag(tag, pageable));
     }
 
     @PutMapping("/{id}")

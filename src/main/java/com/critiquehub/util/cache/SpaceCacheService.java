@@ -1,4 +1,4 @@
-package com.critiquehub.service.cache;
+package com.critiquehub.util.cache;
 
 import com.critiquehub.model.Space;
 import com.critiquehub.repository.SpaceRepository;

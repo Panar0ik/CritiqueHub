@@ -36,8 +36,10 @@ public class TagController {
     }
 
     @GetMapping
-    public List<Tag> getAll() {
-        return tagService.getAllTags();
+    public List<TagDto> getAll() {
+        return tagService.getAllTags().stream()
+                .map(tagMapper::toDto)
+                .toList();
     }
 
     @GetMapping("/search")

@@ -1,4 +1,4 @@
-package com.critiquehub.service.cache;
+package com.critiquehub.util.cache;
 
 public record SpaceCacheKey(
         String tagName,
