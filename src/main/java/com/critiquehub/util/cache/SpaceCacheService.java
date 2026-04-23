@@ -1,8 +1,7 @@
-package com.critiquehub.service;
+package com.critiquehub.service.cache;
 
 import com.critiquehub.model.Space;
 import com.critiquehub.repository.SpaceRepository;
-import com.critiquehub.util.SpaceCacheKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,4 +33,5 @@ public class SpaceCacheService {
         log.info("Cache eviction: Data has been modified.");
         cache.clear();
     }
+
 }
