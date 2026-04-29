@@ -17,6 +17,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +64,8 @@ public class SpaceService {
         Space saved = spaceRepository.save(space);
         spaceRepository.flush();
 
-        dto.tagNames().forEach(spaceCacheService::forceRefreshCacheForTag);
+        Set<String> tagNames = dto.tagNames();
+        registerCacheInvalidation(tagNames);
 
         return spaceMapper.toDto(saved);
     }
@@ -83,7 +86,7 @@ public class SpaceService {
 
         spaceRepository.saveAndFlush(existingSpace);
 
-        affectedTags.forEach(spaceCacheService::forceRefreshCacheForTag);
+        registerCacheInvalidation(affectedTags);
 
         return spaceMapper.toDto(existingSpace);
     }
@@ -100,7 +103,7 @@ public class SpaceService {
         spaceRepository.delete(space);
         spaceRepository.flush();
 
-        affectedTags.forEach(spaceCacheService::forceRefreshCacheForTag);
+        registerCacheInvalidation(affectedTags);
     }
 
     @Transactional(readOnly = true)
@@ -109,18 +112,34 @@ public class SpaceService {
                 .map(spaceMapper::toDto);
     }
 
+    private void registerCacheInvalidation(final Set<String> tags) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    tags.forEach(spaceCacheService::forceRefreshCacheForTag);
+                }
+            });
+        } else {
+            tags.forEach(spaceCacheService::forceRefreshCacheForTag);
+        }
+    }
+
     private Set<Tag> mapTagNamesToEntities(final Set<String> tagNames) {
         if (tagNames == null || tagNames.isEmpty()) {
             return new HashSet<>();
         }
 
         return tagNames.stream()
-                .map(name -> tagRepository.findByName(name)
-                        .orElseGet(() -> {
-                            Tag newTag = new Tag();
-                            newTag.setName(name);
-                            return tagRepository.save(newTag);
-                        }))
+                .map(name -> {
+                    String normalized = name.trim().toLowerCase();
+                    return tagRepository.findByName(normalized)
+                            .orElseGet(() -> {
+                                Tag newTag = new Tag();
+                                newTag.setName(normalized);
+                                return tagRepository.save(newTag);
+                            });
+                })
                 .collect(Collectors.toSet());
     }
 }
