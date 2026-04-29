@@ -64,13 +64,17 @@ public class TagService {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found"));
 
+        String tagName = tag.getName();
         List<Space> spacesWithTag = spaceRepository.findByTags(tag);
 
         for (Space space : spacesWithTag) {
             space.getTags().remove(tag);
-            spaceCacheService.evictAllPagesForTag(tag.getName());
         }
 
+        spaceRepository.saveAllAndFlush(spacesWithTag);
         tagRepository.delete(tag);
+        tagRepository.flush();
+
+        spaceCacheService.forceRefreshCacheForTag(tagName);
     }
 }

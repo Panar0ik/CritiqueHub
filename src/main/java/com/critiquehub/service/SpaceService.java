@@ -12,6 +12,7 @@ import com.critiquehub.repository.UserRepository;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SpaceService {
@@ -31,23 +33,6 @@ public class SpaceService {
     private final TagRepository tagRepository;
     private final SpaceMapper spaceMapper;
     private final SpaceCacheService spaceCacheService;
-
-    @Transactional
-    public SpaceResponseDto createSpace(final SpaceCreateDto dto) {
-        User owner = userRepository.findById(dto.ownerId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Space space = new Space();
-        space.setName(dto.name());
-        space.setDescription(dto.description());
-        space.setOwner(owner);
-        space.setTags(mapTagNamesToEntities(dto.tagNames()));
-
-        SpaceResponseDto saved = spaceMapper.toDto(spaceRepository.save(space));
-        dto.tagNames().forEach(spaceCacheService::evictAllPagesForTag);
-
-        return saved;
-    }
 
     @Transactional(readOnly = true)
     public List<SpaceResponseDto> getAllSpaces() {
@@ -64,36 +49,58 @@ public class SpaceService {
     }
 
     @Transactional
+    public SpaceResponseDto createSpace(final SpaceCreateDto dto) {
+        User owner = userRepository.findById(dto.ownerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Space space = new Space();
+        space.setName(dto.name());
+        space.setDescription(dto.description());
+        space.setOwner(owner);
+        space.setTags(mapTagNamesToEntities(dto.tagNames()));
+
+        Space saved = spaceRepository.save(space);
+        spaceRepository.flush();
+
+        dto.tagNames().forEach(spaceCacheService::forceRefreshCacheForTag);
+
+        return spaceMapper.toDto(saved);
+    }
+
+    @Transactional
     public SpaceResponseDto updateSpace(final Long id, final SpaceCreateDto dto) {
         Space existingSpace = spaceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Space not found"));
 
-        Set<String> oldTags = existingSpace.getTags().stream()
+        Set<String> affectedTags = existingSpace.getTags().stream()
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
+        affectedTags.addAll(dto.tagNames());
 
         existingSpace.setName(dto.name());
         existingSpace.setDescription(dto.description());
         existingSpace.setTags(mapTagNamesToEntities(dto.tagNames()));
 
-        SpaceResponseDto updated = spaceMapper.toDto(spaceRepository.save(existingSpace));
+        spaceRepository.saveAndFlush(existingSpace);
 
-        oldTags.forEach(spaceCacheService::evictAllPagesForTag);
-        dto.tagNames().forEach(spaceCacheService::evictAllPagesForTag);
+        affectedTags.forEach(spaceCacheService::forceRefreshCacheForTag);
 
-        return updated;
+        return spaceMapper.toDto(existingSpace);
     }
 
     @Transactional
     public void deleteSpace(final Long id) {
         Space space = spaceRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Cannot delete: Space not found"));
-        Set<String> tagsToEvict = space.getTags().stream()
+                .orElseThrow(() -> new EntityNotFoundException("Space not found"));
+
+        Set<String> affectedTags = space.getTags().stream()
                 .map(Tag::getName)
                 .collect(Collectors.toSet());
 
         spaceRepository.delete(space);
-        tagsToEvict.forEach(spaceCacheService::evictAllPagesForTag);
+        spaceRepository.flush();
+
+        affectedTags.forEach(spaceCacheService::forceRefreshCacheForTag);
     }
 
     @Transactional(readOnly = true)
