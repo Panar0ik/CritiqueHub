@@ -1,4 +1,4 @@
-package com.github.Panar0ik.Critiquehub;
+package com.critiquehub;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -5,6 +5,7 @@ import com.critiquehub.dto.UserCreateDto;
 import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class UserController {
     private final SpaceMapper spaceMapper;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(final @RequestBody UserCreateDto dto) {
+    public ResponseEntity<UserResponseDto> createUser(final @Valid @RequestBody UserCreateDto dto) {
         return new ResponseEntity<>(userService.createUser(dto), HttpStatus.CREATED);
     }
 
