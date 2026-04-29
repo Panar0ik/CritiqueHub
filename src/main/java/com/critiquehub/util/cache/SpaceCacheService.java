@@ -63,11 +63,4 @@ public class SpaceCacheService {
         cache.put(key, freshPage);
         log.info("Cache proactively updated for tag: {}", key.tagName());
     }
-
-    public void evictAllPagesForTag(final String tagName) {
-        if (tagName == null) {
-            return;
-        }
-        cache.keySet().removeIf(key -> key.tagName().equalsIgnoreCase(tagName));
-    }
 }
