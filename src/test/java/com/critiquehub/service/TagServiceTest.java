@@ -210,8 +210,11 @@ class TagServiceTest {
 
     @Test
     void createTagsBulk_SpaceNotFound_ThrowsException() {
-        when(spaceRepository.findById(1L)).thenReturn(Optional.empty());
+        Long spaceId = 1L;
+        List<TagCreateDto> emptyList = List.of();
 
-        assertThrows(EntityNotFoundException.class, () -> tagService.createTagsBulk(1L, List.of()));
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> tagService.createTagsBulk(spaceId, emptyList));
     }
 }
