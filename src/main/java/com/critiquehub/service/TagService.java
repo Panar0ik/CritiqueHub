@@ -1,12 +1,12 @@
 package com.critiquehub.service;
 
-import com.critiquehub.dto.SpaceResponseDto;
 import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
+import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.Space;
+import com.critiquehub.model.Tag;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
-import com.critiquehub.model.Tag;
 import com.critiquehub.util.aspect.LogExecutionTime;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,8 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,7 @@ public class TagService {
     private final TagRepository tagRepository;
     private final SpaceRepository spaceRepository;
     private final SpaceCacheService spaceCacheService;
+    private final SpaceMapper spaceMapper;
 
     @LogExecutionTime
     @Transactional(readOnly = true)
@@ -113,17 +113,10 @@ public class TagService {
                 .map(tag -> new TagDto(
                         tag.getId(),
                         tag.getName(),
-                        tag.getSpaces().stream()
-                                .map(s -> new SpaceResponseDto(
-                                        s.getId(),
-                                        s.getName(),
-                                        s.getDescription(),
-                                        s.getOwner() != null ? s.getOwner().getUsername() : null,
-                                        s.getTags() != null ? s.getTags()
-                                                .stream()
-                                                .map(Tag::getName)
-                                                .collect(Collectors.toSet()) : Set.of()
-                                ))
+                        Optional.ofNullable(tag.getSpaces())
+                                .orElse(new HashSet<>())
+                                .stream()
+                                .map(spaceMapper::toDto)
                                 .toList()
                 ))
                 .toList();
