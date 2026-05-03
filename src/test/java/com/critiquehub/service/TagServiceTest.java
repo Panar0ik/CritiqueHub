@@ -1,7 +1,9 @@
 package com.critiquehub.service;
 
+import com.critiquehub.dto.SpaceResponseDto;
 import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
+import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.Space;
 import com.critiquehub.model.Tag;
 import com.critiquehub.model.User;
@@ -26,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +42,9 @@ class TagServiceTest {
 
     @Mock
     private SpaceCacheService spaceCacheService;
+
+    @Mock
+    private SpaceMapper spaceMapper;
 
     @InjectMocks
     private TagService tagService;
@@ -178,11 +182,12 @@ class TagServiceTest {
     @Test
     void createTagsBulk_Success() {
         Long spaceId = 1L;
+        User owner = new User();
+        owner.setUsername("admin");
+
         Space space = new Space();
         space.setId(spaceId);
         space.setName("Test Space");
-        User owner = new User();
-        owner.setUsername("admin");
         space.setOwner(owner);
         space.setTags(new HashSet<>());
 
@@ -201,11 +206,24 @@ class TagServiceTest {
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
         when(tagRepository.saveAll(anyList())).thenReturn(List.of(tag1, tag2));
 
+        SpaceResponseDto spaceDto = new SpaceResponseDto(
+                spaceId,
+                "Test Space",
+                "Description or Date String",
+                "admin",
+                Set.of()
+        );
+        when(spaceMapper.toDto(any(Space.class))).thenReturn(spaceDto);
+
         List<TagDto> result = tagService.createTagsBulk(spaceId, dtos);
 
+        assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("tag1", result.get(0).name());
-        verify(tagRepository, times(1)).saveAll(anyList());
+        assertNotNull(result.get(0).spaces());
+
+        verify(spaceRepository).findById(spaceId);
+        verify(tagRepository).saveAll(anyList());
     }
 
     @Test

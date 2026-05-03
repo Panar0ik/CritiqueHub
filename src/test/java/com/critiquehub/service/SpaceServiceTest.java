@@ -173,7 +173,8 @@ class SpaceServiceTest {
 
     @Test
     void mapTagNamesToEntities_NullOrEmpty_ReturnsEmptySet() {
-        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, null);
+        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, new HashSet<>());
+
         when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
         when(spaceRepository.save(any())).thenReturn(new Space());
 
