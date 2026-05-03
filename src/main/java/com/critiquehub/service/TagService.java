@@ -1,17 +1,23 @@
 package com.critiquehub.service;
 
+import com.critiquehub.dto.SpaceResponseDto;
+import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
 import com.critiquehub.model.Space;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.model.Tag;
+import com.critiquehub.util.aspect.LogExecutionTime;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +27,20 @@ public class TagService {
     private final SpaceRepository spaceRepository;
     private final SpaceCacheService spaceCacheService;
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public List<Tag> getAllTags() {
         return tagRepository.findAll();
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public Tag getByName(final String name) {
         return tagRepository.findByName(name)
                 .orElseThrow(() -> new EntityNotFoundException("Tag not found: " + name));
     }
 
+    @LogExecutionTime
     @Transactional
     public Tag saveTag(final TagDto tagDto) {
         String cleanName = tagDto.name();
@@ -44,6 +53,7 @@ public class TagService {
                 });
     }
 
+    @LogExecutionTime
     @Transactional
     public Tag updateTagName(final Long id, final String newName) {
         Tag tag = tagRepository.findById(id)
@@ -59,6 +69,7 @@ public class TagService {
         return tagRepository.save(tag);
     }
 
+    @LogExecutionTime
     @Transactional
     public void deleteTag(final Long id) {
         Tag tag = tagRepository.findById(id)
@@ -76,5 +87,45 @@ public class TagService {
         tagRepository.flush();
 
         spaceCacheService.forceRefreshCacheForTag(tagName);
+    }
+
+    @LogExecutionTime
+    @Transactional
+    public List<TagDto> createTagsBulk(final Long spaceId, final List<TagCreateDto> dtos) {
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
+
+        List<Tag> tagsToSave = dtos.stream()
+                .map(dto -> {
+                    Tag tag = new Tag();
+                    tag.setName(dto.name());
+                    if (tag.getSpaces() == null) {
+                        tag.setSpaces(new HashSet<>());
+                    }
+                    tag.getSpaces().add(space);
+                    return tag;
+                })
+                .toList();
+
+        List<Tag> savedTags = tagRepository.saveAll(tagsToSave);
+
+        return savedTags.stream()
+                .map(tag -> new TagDto(
+                        tag.getId(),
+                        tag.getName(),
+                        tag.getSpaces().stream()
+                                .map(s -> new SpaceResponseDto(
+                                        s.getId(),
+                                        s.getName(),
+                                        s.getDescription(),
+                                        s.getOwner() != null ? s.getOwner().getUsername() : null,
+                                        s.getTags() != null ? s.getTags()
+                                                .stream()
+                                                .map(Tag::getName)
+                                                .collect(Collectors.toSet()) : Set.of()
+                                ))
+                                .toList()
+                ))
+                .toList();
     }
 }

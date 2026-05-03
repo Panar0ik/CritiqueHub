@@ -9,6 +9,7 @@ import com.critiquehub.model.User;
 import com.critiquehub.repository.MessageRepository;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
+import com.critiquehub.util.aspect.LogExecutionTime;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class MessageService {
     private final SpaceRepository spaceRepository;
     private final MessageMapper messageMapper;
 
+    @LogExecutionTime
     @Transactional
     public MessageResponseDto sendMessage(final MessageCreateDto dto) {
         User user = userRepository.findById(dto.userId())
@@ -43,6 +45,7 @@ public class MessageService {
         return messageMapper.toDto(savedMessage);
     }
 
+    @LogExecutionTime
     @Transactional
     public List<MessageResponseDto> getMessagesBySpace(final Long spaceId) {
         return messageRepository.findBySpaceId(spaceId).stream()
@@ -50,6 +53,7 @@ public class MessageService {
                 .toList();
     }
 
+    @LogExecutionTime
     @Transactional
     public MessageResponseDto updateMessage(final Long id, final String newContent) {
         Message message = messageRepository.findById(id)
@@ -60,6 +64,7 @@ public class MessageService {
         return messageMapper.toDto(messageRepository.save(message));
     }
 
+    @LogExecutionTime
     @Transactional
     public void deleteMessage(final Long id) {
         if (!messageRepository.existsById(id)) {

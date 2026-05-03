@@ -3,6 +3,9 @@ package com.critiquehub.controller;
 import com.critiquehub.dto.SpaceCreateDto;
 import com.critiquehub.dto.SpaceResponseDto;
 import com.critiquehub.service.SpaceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,44 +29,49 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/spaces")
 @RequiredArgsConstructor
+@Tag(name = "Spaces", description = "Space management and search APIs")
 public class SpaceController {
 
     private static final int DEFAULT_PAGE_SIZE = 10;
-
     private final SpaceService spaceService;
 
     @PostMapping
+    @Operation(summary = "Create a new space")
     public ResponseEntity<SpaceResponseDto> create(final @Valid @RequestBody SpaceCreateDto dto) {
-        SpaceResponseDto created = spaceService.createSpace(dto);
-
+        final SpaceResponseDto created = spaceService.createSpace(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
+    @Operation(summary = "Get all spaces")
     public List<SpaceResponseDto> getAll() {
         return spaceService.getAllSpaces();
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get space by ID")
     public SpaceResponseDto getById(final @PathVariable Long id) {
         return spaceService.getById(id);
     }
 
     @GetMapping("/search")
+    @Operation(summary = "Search spaces by tag")
     public ResponseEntity<Page<SpaceResponseDto>> search(
             final @RequestParam String tag,
-            final @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable
+            final @Parameter(hidden = true) @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
         return ResponseEntity.ok(spaceService.getSpacesByTag(tag, pageable));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update space")
     public SpaceResponseDto update(final @PathVariable Long id, final @RequestBody SpaceCreateDto dto) {
         return spaceService.updateSpace(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete space")
     public void delete(final @PathVariable Long id) {
         spaceService.deleteSpace(id);
     }

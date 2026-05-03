@@ -6,6 +6,7 @@ import com.critiquehub.model.Attachment;
 import com.critiquehub.repository.AttachmentRepository;
 import com.critiquehub.repository.MessageRepository;
 import com.critiquehub.model.Message;
+import com.critiquehub.util.aspect.LogExecutionTime;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class AttachmentService {
     private final AttachmentMapper attachmentMapper;
     private final MessageRepository messageRepository;
 
+    @LogExecutionTime
     @Transactional
     public AttachmentResponseDto saveAttachment(final String filePath, final Long messageId) {
         Message message = messageRepository.findById(messageId)
@@ -34,6 +36,7 @@ public class AttachmentService {
         return attachmentMapper.toDto(saved);
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public List<AttachmentResponseDto> getByMessageId(final Long messageId) {
         return attachmentRepository.findByMessageId(messageId).stream()
@@ -41,6 +44,7 @@ public class AttachmentService {
                 .toList();
     }
 
+    @LogExecutionTime
     @Transactional
     public AttachmentResponseDto updateAttachmentPath(final Long id, final String newPath) {
         Attachment attachment = attachmentRepository.findById(id)
@@ -49,6 +53,7 @@ public class AttachmentService {
         return attachmentMapper.toDto(attachmentRepository.save(attachment));
     }
 
+    @LogExecutionTime
     @Transactional
     public void deleteAttachment(final Long id) {
         attachmentRepository.deleteById(id);

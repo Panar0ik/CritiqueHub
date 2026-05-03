@@ -7,6 +7,7 @@ import com.critiquehub.model.Space;
 import com.critiquehub.model.User;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
+import com.critiquehub.util.aspect.LogExecutionTime;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class UserService {
     private final SpaceRepository spaceRepository;
     private final UserMapper userMapper;
 
+    @LogExecutionTime
     @Transactional
     public UserResponseDto createUser(final UserCreateDto dto) {
         if (userRepository.existsByUsername(dto.username())) {
@@ -38,6 +40,7 @@ public class UserService {
         return userMapper.toDto(userRepository.save(user));
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
@@ -45,6 +48,7 @@ public class UserService {
                 .toList();
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public UserResponseDto findById(final Long id) {
         return userRepository.findById(id)
@@ -52,6 +56,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
     }
 
+    @LogExecutionTime
     @Transactional
     public UserResponseDto updateUser(final Long id, final UserCreateDto dto) {
         User existingUser = userRepository.findById(id)
@@ -70,6 +75,7 @@ public class UserService {
         return userMapper.toDto(savedUser);
     }
 
+    @LogExecutionTime
     @Transactional
     public void deleteUser(final Long id) {
         if (!userRepository.existsById(id)) {
@@ -78,6 +84,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public Set<Space> getUserFavorites(final Long userId) {
         User user = userRepository.findById(userId)
@@ -86,6 +93,7 @@ public class UserService {
         return user.getFavoriteSpaces();
     }
 
+    @LogExecutionTime
     @Transactional
     public void addSpaceToFavorites(final Long userId, final Long spaceId) {
         User user = userRepository.findById(userId)
@@ -96,6 +104,7 @@ public class UserService {
         user.getFavoriteSpaces().add(space);
     }
 
+    @LogExecutionTime
     @Transactional
     public void removeSpaceFromFavorites(final Long userId, final Long spaceId) {
         User user = userRepository.findById(userId)

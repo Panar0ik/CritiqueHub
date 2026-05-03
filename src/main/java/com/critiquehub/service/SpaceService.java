@@ -9,6 +9,7 @@ import com.critiquehub.model.User;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.repository.UserRepository;
+import com.critiquehub.util.aspect.LogExecutionTime;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class SpaceService {
     private final SpaceMapper spaceMapper;
     private final SpaceCacheService spaceCacheService;
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public List<SpaceResponseDto> getAllSpaces() {
         return spaceRepository.findAll().stream()
@@ -43,6 +45,7 @@ public class SpaceService {
                 .toList();
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public SpaceResponseDto getById(final Long id) {
         return spaceRepository.findById(id)
@@ -50,6 +53,7 @@ public class SpaceService {
                 .orElseThrow(() -> new RuntimeException("Space not found with id: " + id));
     }
 
+    @LogExecutionTime
     @Transactional
     public SpaceResponseDto createSpace(final SpaceCreateDto dto) {
         User owner = userRepository.findById(dto.ownerId())
@@ -70,6 +74,7 @@ public class SpaceService {
         return spaceMapper.toDto(saved);
     }
 
+    @LogExecutionTime
     @Transactional
     public SpaceResponseDto updateSpace(final Long id, final SpaceCreateDto dto) {
         Space existingSpace = spaceRepository.findById(id)
@@ -91,6 +96,7 @@ public class SpaceService {
         return spaceMapper.toDto(existingSpace);
     }
 
+    @LogExecutionTime
     @Transactional
     public void deleteSpace(final Long id) {
         Space space = spaceRepository.findById(id)
@@ -106,6 +112,7 @@ public class SpaceService {
         registerCacheInvalidation(affectedTags);
     }
 
+    @LogExecutionTime
     @Transactional(readOnly = true)
     public Page<SpaceResponseDto> getSpacesByTag(final String tagName, final Pageable pageable) {
         return spaceCacheService.getSpacesByTag(tagName, pageable)

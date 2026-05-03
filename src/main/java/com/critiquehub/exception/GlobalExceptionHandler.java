@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestControllerAdvice
@@ -18,7 +19,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFound(final EntityNotFoundException ex) {
         log.error("Resource not found: {}", ex.getMessage());
-        return buildResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+        return buildResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), Collections.emptyList());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -36,10 +37,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGlobalException(final Exception ex) {
         log.error("Internal Server Error: ", ex);
+        String detail = ex.getMessage() != null ? ex.getMessage() : "No message available";
         return buildResponseEntity(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
-                List.of(ex.getMessage() != null ? ex.getMessage() : "No message available")
+                List.of(detail)
         );
     }
 
