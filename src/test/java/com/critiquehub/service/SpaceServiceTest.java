@@ -13,6 +13,7 @@ import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,7 +21,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,11 +33,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SpaceServiceTest {
@@ -85,19 +85,21 @@ class SpaceServiceTest {
 
     @Test
     void createSpace_Success() {
-        SpaceCreateDto dto = new SpaceCreateDto("New Space", "Desc", 1L, Set.of("java", "spring"));
+        SpaceCreateDto dto = new SpaceCreateDto("New Space", "Desc", 1L, Set.of(" Java ", "Spring"));
         User owner = new User();
-        Tag tag = new Tag();
-        tag.setName("java");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
-        when(tagRepository.findByName(anyString())).thenReturn(Optional.of(tag));
+        when(tagRepository.findByName("java")).thenReturn(Optional.empty());
+        when(tagRepository.findByName("spring")).thenReturn(Optional.empty());
+        when(tagRepository.save(any(Tag.class))).thenAnswer(i -> i.getArguments()[0]);
         when(spaceRepository.save(any(Space.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "New Space", "Desc", "Owner", Set.of("java")));
+        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "New Space", "Desc", "Owner", Set.of("java", "spring")));
 
         SpaceResponseDto result = spaceService.createSpace(dto);
 
         assertNotNull(result);
+        verify(tagRepository).findByName("java");
+        verify(tagRepository).findByName("spring");
         verify(spaceRepository).save(any());
         verify(spaceCacheService, atLeastOnce()).forceRefreshCacheForTag(anyString());
     }
@@ -113,8 +115,11 @@ class SpaceServiceTest {
     @Test
     void updateSpace_Success() {
         Long id = 1L;
+        Tag oldTag = new Tag();
+        oldTag.setName("old");
         Space existingSpace = new Space();
-        existingSpace.setTags(new HashSet<>());
+        existingSpace.setTags(new HashSet<>(Set.of(oldTag)));
+
         SpaceCreateDto dto = new SpaceCreateDto("Updated", "Desc", 1L, Set.of("new"));
 
         when(spaceRepository.findById(id)).thenReturn(Optional.of(existingSpace));
@@ -126,6 +131,8 @@ class SpaceServiceTest {
 
         assertEquals("Updated", result.name());
         verify(spaceRepository).saveAndFlush(existingSpace);
+        verify(spaceCacheService).forceRefreshCacheForTag("old");
+        verify(spaceCacheService).forceRefreshCacheForTag("new");
     }
 
     @Test
@@ -172,8 +179,64 @@ class SpaceServiceTest {
     }
 
     @Test
-    void mapTagNamesToEntities_NullOrEmpty_ReturnsEmptySet() {
-        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, new HashSet<>());
+    void mapTagNamesToEntities_Null_ReturnsEmptySet() {
+        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, null);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
+        when(spaceRepository.save(any())).thenReturn(new Space());
+
+        spaceService.createSpace(dto);
+
+        verify(tagRepository, never()).findByName(any());
+    }
+
+    @Test
+    void createSpace_ShouldNormalizeTagNames() {
+        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, Set.of("  Java  ", "Spring  "));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
+        when(tagRepository.findByName(anyString())).thenReturn(Optional.of(new Tag()));
+        when(spaceRepository.save(any())).thenReturn(new Space());
+
+        spaceService.createSpace(dto);
+
+        verify(tagRepository).findByName("java");
+        verify(tagRepository).findByName("spring");
+    }
+
+    @Test
+    void registerCacheInvalidation_ShouldHandleActiveTransaction() {
+        Set<String> tags = Set.of("java");
+        Long spaceId = 1L;
+        Space space = new Space();
+        Tag tag = new Tag();
+        tag.setName("java");
+        space.setTags(Set.of(tag));
+
+        try (var mockedStatic = mockStatic(TransactionSynchronizationManager.class)) {
+            mockedStatic.when(TransactionSynchronizationManager::isActualTransactionActive)
+                    .thenReturn(true);
+
+            when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+
+            spaceService.deleteSpace(spaceId);
+
+            mockedStatic.verify(() ->
+                    TransactionSynchronizationManager.registerSynchronization(any(TransactionSynchronization.class))
+            );
+
+            ArgumentCaptor<TransactionSynchronization> syncCaptor = ArgumentCaptor.forClass(TransactionSynchronization.class);
+            mockedStatic.verify(() -> TransactionSynchronizationManager.registerSynchronization(syncCaptor.capture()));
+
+            TransactionSynchronization synchronization = syncCaptor.getValue();
+            synchronization.afterCommit();
+
+            verify(spaceCacheService).forceRefreshCacheForTag("java");
+        }
+    }
+
+    @Test
+    void mapTagNamesToEntities_Empty_ReturnsEmptySet() {
+        SpaceCreateDto dto = new SpaceCreateDto("Name", "Desc", 1L, Collections.emptySet());
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
         when(spaceRepository.save(any())).thenReturn(new Space());

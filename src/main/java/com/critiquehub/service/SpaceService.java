@@ -119,7 +119,13 @@ public class SpaceService {
                 .map(spaceMapper::toDto);
     }
 
+    @LogExecutionTime
+    @Transactional(readOnly = true)
     private void registerCacheInvalidation(final Set<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return;
+        }
+
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override

@@ -45,6 +45,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDto> handleBadRequest(final IllegalArgumentException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), Collections.emptyList());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponseDto> handleConflict(final IllegalStateException ex) {
+        log.warn("Conflict: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), Collections.emptyList());
+    }
+
     private ResponseEntity<ErrorResponseDto> buildResponseEntity(
             final HttpStatus status,
             final String message,
