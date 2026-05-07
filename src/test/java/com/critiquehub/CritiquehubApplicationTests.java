@@ -1,14 +1,19 @@
 package com.critiquehub;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 
 @SpringBootTest
 class CritiquehubApplicationTests {
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Test
     void contextLoads() {
-        // This method is empty because its primary purpose is to verify that the Spring application context loads successfully.
+        assertThat(applicationContext).isNotNull();
     }
-
 }

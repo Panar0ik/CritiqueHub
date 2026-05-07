@@ -121,7 +121,7 @@ public class SpaceService {
 
     @LogExecutionTime
     @Transactional(readOnly = true)
-    private void registerCacheInvalidation(final Set<String> tags) {
+    public void registerCacheInvalidation(final Set<String> tags) {
         if (tags == null || tags.isEmpty()) {
             return;
         }
