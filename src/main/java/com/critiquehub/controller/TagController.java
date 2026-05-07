@@ -64,9 +64,9 @@ public class TagController {
     @Operation(summary = "Bulk create tags for space")
     public List<TagDto> createTagsBulk(
             final @PathVariable Long spaceId,
-            final @RequestBody List<TagCreateDto> tagDtos
+            final @RequestBody List<TagCreateDto> dtos
     ) {
-        return tagService.createTagsBulk(spaceId, tagDtos);
+        return tagService.createTagsBulk(spaceId, dtos);
     }
 
     @DeleteMapping("/{id}")

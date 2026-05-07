@@ -92,9 +92,6 @@ public class TagService {
     @LogExecutionTime
     @Transactional
     public List<TagDto> createTagsBulk(final Long spaceId, final List<TagCreateDto> dtos) {
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
-
         List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
                     Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
@@ -106,15 +103,21 @@ public class TagService {
                     if (tag.getSpaces() == null) {
                         tag.setSpaces(new HashSet<>());
                     }
-
-                    tag.getSpaces().add(space);
-                    space.getTags().add(tag);
-
                     return tag;
                 })
                 .toList();
 
         List<Tag> savedTags = tagRepository.saveAll(tagsToSave);
+        tagRepository.flush();
+
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
+
+        for (Tag tag : savedTags) {
+            tag.getSpaces().add(space);
+            space.getTags().add(tag);
+        }
+
         spaceRepository.save(space);
 
         return savedTags.stream()
