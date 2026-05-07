@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -232,5 +233,42 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.removeSpaceFromFavorites(1L, 2L))
                 .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void createUser_ShouldThrowException_WhenUsernameExists() {
+        UserCreateDto dto = new UserCreateDto("panar0ik", "test@mail.com", "pass");
+        when(userRepository.existsByUsername("panar0ik")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.createUser(dto))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("already taken");
+    }
+
+    @Test
+    void addSpaceToFavorites_ShouldWork() {
+        User user = new User();
+        user.setFavoriteSpaces(new HashSet<>());
+        Space space = new Space();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
+
+        userService.addSpaceToFavorites(1L, 2L);
+
+        assertThat(user.getFavoriteSpaces()).contains(space);
+        verify(userRepository).saveAndFlush(user);
+    }
+
+    @Test
+    void updateUser_ShouldThrow_WhenEmailIsEmpty() {
+        User user = new User();
+        user.setUsername("old");
+        UserCreateDto dto = new UserCreateDto("old", "", "pass"); // Пустой email
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.updateUser(1L, dto))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

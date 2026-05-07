@@ -16,6 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +79,63 @@ class TagServiceTest {
         when(tagRepository.findByName("unknown")).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> tagService.getByName("unknown"));
+    }
+
+    @Test
+    void getByName_ShouldReturnTag_WhenExists() {
+        Tag tag = new Tag();
+        tag.setName("Anime");
+        when(tagRepository.findByName("Anime")).thenReturn(Optional.of(tag));
+
+        Tag result = tagService.getByName("Anime");
+
+        assertThat(result.getName()).isEqualTo("Anime");
+    }
+
+    @Test
+    void getByName_ShouldThrowException_WhenNotFound() {
+        when(tagRepository.findByName("Unknown")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> tagService.getByName("Unknown"))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    void updateTagName_ShouldThrow_WhenNameAlreadyTakenByAnotherId() {
+        Tag existingTag = new Tag();
+        existingTag.setId(1L);
+        Tag anotherTag = new Tag();
+        anotherTag.setId(2L); // Другой ID, то же имя
+
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(existingTag));
+        when(tagRepository.findByName("NewName")).thenReturn(Optional.of(anotherTag));
+
+        assertThatThrownBy(() -> tagService.updateTagName(1L, "NewName"))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("already exists");
+    }
+
+    @Test
+    void createTagsBulk_ShouldWorkCorrectly() {
+        Long spaceId = 1L;
+        Space space = new Space();
+        space.setId(spaceId);
+        space.setTags(new HashSet<>());
+
+        TagCreateDto dto = new TagCreateDto("NewTag");
+        Tag savedTag = new Tag();
+        savedTag.setId(10L);
+        savedTag.setName("NewTag");
+
+        when(tagRepository.findByName("NewTag")).thenReturn(Optional.empty());
+        when(tagRepository.saveAll(any())).thenReturn(List.of(savedTag));
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+
+        List<TagDto> result = tagService.createTagsBulk(spaceId, List.of(dto));
+
+        assertThat(result).hasSize(1);
+        verify(spaceRepository).save(space);
+        verify(tagRepository).flush();
     }
 
     @Test
