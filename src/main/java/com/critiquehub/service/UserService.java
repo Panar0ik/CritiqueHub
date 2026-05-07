@@ -22,6 +22,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserService {
 
+    private static final String USER_NOT_FOUND = "User not found";
+
     private final UserRepository userRepository;
     private final SpaceRepository spaceRepository;
     private final UserMapper userMapper;
@@ -81,7 +83,7 @@ public class UserService {
     @Transactional
     public void deleteUser(final Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
 
         userRepository.delete(user);
         log.info("Deleted user with id: {}", id);
@@ -92,14 +94,14 @@ public class UserService {
     public Set<Space> getUserFavorites(final Long userId) {
         return userRepository.findById(userId)
                 .map(User::getFavoriteSpaces)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
     }
 
     @LogExecutionTime
     @Transactional
     public void addSpaceToFavorites(final Long userId, final Long spaceId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new EntityNotFoundException("Space not found"));
 
@@ -111,7 +113,7 @@ public class UserService {
     @Transactional
     public void removeSpaceFromFavorites(final Long userId, final Long spaceId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
 
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new EntityNotFoundException("Space not found"));

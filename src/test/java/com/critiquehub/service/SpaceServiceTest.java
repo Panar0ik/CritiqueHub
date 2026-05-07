@@ -205,7 +205,6 @@ class SpaceServiceTest {
 
     @Test
     void registerCacheInvalidation_ShouldHandleActiveTransaction() {
-        Set<String> tags = Set.of("java");
         Long spaceId = 1L;
         Space space = new Space();
         Tag tag = new Tag();
