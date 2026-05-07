@@ -22,8 +22,14 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -72,7 +78,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("createUser: throw exception when username taken")
+    @DisplayName("createUser: conflict")
     void createUser_Conflict() {
         UserCreateDto dto = new UserCreateDto("taken", "a@b.com", "p");
         when(userRepository.existsByUsername("taken")).thenReturn(true);
@@ -93,7 +99,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("findById: throw exception when not found")
+    @DisplayName("findById: not found")
     void findById_NotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.findById(1L))
@@ -136,7 +142,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser: throw exception when new username taken")
+    @DisplayName("updateUser: username taken")
     void updateUser_UsernameTaken() {
         User existing = new User();
         existing.setUsername("old");
@@ -149,23 +155,65 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser: throw exception when email blank")
+    @DisplayName("updateUser: success when username remains the same")
+    void updateUser_UsernameUnchanged_Success() {
+        Long id = 1L;
+        User existing = new User();
+        existing.setUsername("panar0ik");
+
+        UserCreateDto dto = new UserCreateDto("panar0ik", "new@email.com", "password");
+        UserResponseDto resp = new UserResponseDto(id, "panar0ik", "new@email.com");
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(existing));
+        when(userRepository.save(any(User.class))).thenReturn(existing);
+        when(userMapper.toDto(any(User.class))).thenReturn(resp);
+
+        UserResponseDto result = userService.updateUser(id, dto);
+
+        verify(userRepository, never()).existsByUsername(anyString());
+        assertThat(result.username()).isEqualTo("panar0ik");
+    }
+
+    @Test
+    @DisplayName("addSpaceToFavorites: throw exception when Space not found")
+    void addSpaceToFavorites_SpaceNotFound_Throws() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.addSpaceToFavorites(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: do nothing if space is not in favorites")
+    void removeSpaceFromFavorites_NotInFavorites_DoesNotSave() {
+        User user = new User();
+        user.setFavoriteSpaces(new HashSet<>()); // Пустой список
+        Space space = new Space();
+        space.setId(2L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
+
+        userService.removeSpaceFromFavorites(1L, 2L);
+
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    @DisplayName("updateUser: user not found")
+    void updateUser_UserNotFound_ThrowsException() {
+        UserCreateDto dto = new UserCreateDto("new", "new@test.com", "pass");
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.updateUser(1L, dto));
+    }
+
+    @Test
+    @DisplayName("updateUser: email blank")
     void updateUser_EmailBlank_ThrowsException() {
         User existing = new User();
         existing.setUsername("name");
         UserCreateDto dto = new UserCreateDto("name", "  ", "p");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
-
-        assertThatThrownBy(() -> userService.updateUser(1L, dto))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    @DisplayName("updateUser: throw exception when email null")
-    void updateUser_EmailNull_ThrowsException() {
-        User existing = new User();
-        existing.setUsername("name");
-        UserCreateDto dto = new UserCreateDto("name", null, "p");
         when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
 
         assertThatThrownBy(() -> userService.updateUser(1L, dto))
@@ -182,7 +230,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("deleteUser: throw exception when not found")
+    @DisplayName("deleteUser: not found")
     void deleteUser_NotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.deleteUser(1L))
@@ -193,7 +241,7 @@ class UserServiceTest {
     @DisplayName("getUserFavorites: success")
     void getUserFavorites_Success() {
         User user = new User();
-        Set<Space> spaces = Set.of(new Space());
+        Set<Space> spaces = new HashSet<>(List.of(new Space()));
         user.setFavoriteSpaces(spaces);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
@@ -202,51 +250,16 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addSpaceToFavorites: throw exception when space not found")
-    void addSpaceToFavorites_SpaceNotFound() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
-        when(spaceRepository.findById(2L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.addSpaceToFavorites(1L, 2L))
-                .isInstanceOf(EntityNotFoundException.class);
-    }
-
-    @Test
-    @DisplayName("removeSpaceFromFavorites: success if present")
-    void removeSpaceFromFavorites_Success() {
-        User user = new User();
-        Space space = new Space();
-        user.getFavoriteSpaces().add(space);
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
-
-        userService.removeSpaceFromFavorites(1L, 2L);
-
-        assertThat(user.getFavoriteSpaces()).isEmpty();
-        verify(userRepository).saveAndFlush(user);
-    }
-
-    @Test
-    @DisplayName("removeSpaceFromFavorites: user not found")
-    void removeSpaceFromFavorites_UserNotFound() {
+    @DisplayName("getUserFavorites: user not found")
+    void getUserFavorites_UserNotFound_ThrowsException() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> userService.removeSpaceFromFavorites(1L, 2L))
-                .isInstanceOf(EntityNotFoundException.class);
+
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserFavorites(1L));
     }
 
     @Test
-    void createUser_ShouldThrowException_WhenUsernameExists() {
-        UserCreateDto dto = new UserCreateDto("panar0ik", "test@mail.com", "pass");
-        when(userRepository.existsByUsername("panar0ik")).thenReturn(true);
-
-        assertThatThrownBy(() -> userService.createUser(dto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already taken");
-    }
-
-    @Test
-    void addSpaceToFavorites_ShouldWork() {
+    @DisplayName("addSpaceToFavorites: success")
+    void addSpaceToFavorites_Success() {
         User user = new User();
         user.setFavoriteSpaces(new HashSet<>());
         Space space = new Space();
@@ -261,14 +274,152 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_ShouldThrow_WhenEmailIsEmpty() {
+    @DisplayName("addSpaceToFavorites: space not found")
+    void addSpaceToFavorites_SpaceNotFound_ThrowsException() {
         User user = new User();
-        user.setUsername("old");
-        UserCreateDto dto = new UserCreateDto("old", "", "pass"); // Пустой email
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.addSpaceToFavorites(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: success if present")
+    void removeSpaceFromFavorites_Success() {
+        User user = new User();
+        Space space = new Space();
+        space.setId(2L);
+        Set<Space> favorites = new HashSet<>();
+        favorites.add(space);
+        user.setFavoriteSpaces(favorites);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
 
-        assertThatThrownBy(() -> userService.updateUser(1L, dto))
-                .isInstanceOf(IllegalArgumentException.class);
+        userService.removeSpaceFromFavorites(1L, 2L);
+
+        assertTrue(user.getFavoriteSpaces().isEmpty());
+        verify(userRepository).saveAndFlush(user);
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: space not in favorites")
+    void removeSpaceFromFavorites_NotPresent_ShouldNotSave() {
+        User user = new User();
+        user.setFavoriteSpaces(new HashSet<>());
+        Space space = new Space();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
+
+        userService.removeSpaceFromFavorites(1L, 2L);
+
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: space not found")
+    void removeSpaceFromFavorites_SpaceNotFound_ThrowsException() {
+        User user = new User();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> userService.removeSpaceFromFavorites(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: user not found")
+    void removeSpaceFromFavorites_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> userService.removeSpaceFromFavorites(1L, 2L))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("updateUser: выброс исключения при поиске пользователя")
+    void updateUser_UserNotFound_LambdaCoverage() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () ->
+                userService.updateUser(1L, new UserCreateDto("new", "e@e.com", "p")));
+    }
+
+    @Test
+    @DisplayName("addSpaceToFavorites: выброс исключения при поиске Space")
+    void addSpaceToFavorites_SpaceNotFound_LambdaCoverage() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
+        when(spaceRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> userService.addSpaceToFavorites(1L, 2L));
+    }
+
+    @Test
+    @DisplayName("getUserFavorites: выброс исключения при поиске пользователя")
+    void getUserFavorites_UserNotFound_LambdaCoverage() {
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> userService.getUserFavorites(1L));
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: если объекта нет в списке, сохранение не вызывается")
+    void removeSpaceFromFavorites_NotPresent_NoSave() {
+        User user = new User();
+        user.setFavoriteSpaces(new HashSet<>()); // Пусто
+        Space space = new Space();
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(anyLong())).thenReturn(Optional.of(space));
+
+        userService.removeSpaceFromFavorites(1L, 2L);
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void addSpaceToFavorites_ShouldThrowException_WhenUserNotFound() {
+        Long userId = 999L;
+        Long spaceId = 1L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                userService.addSpaceToFavorites(userId, spaceId)
+        );
+
+        assertTrue(exception.getMessage().contains("not found") || exception.getMessage().equals("User not found"));
+
+        verify(spaceRepository, never()).findById(any());
+    }
+
+    @Test
+    void updateUser_ShouldThrowException_WhenEmailIsNull() {
+        Long userId = 1L;
+        String sameUsername = "testUser";
+
+        UserCreateDto dto = new UserCreateDto(sameUsername, null, "password");
+
+        User existingUser = new User();
+        existingUser.setId(userId);
+        existingUser.setUsername(sameUsername);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.updateUser(userId, dto)
+        );
+    }
+
+    @Test
+    void updateUser_ShouldThrowException_WhenEmailIsBlank() {
+        Long userId = 1L;
+        String sameUsername = "testUser";
+
+        UserCreateDto dto = new UserCreateDto(sameUsername, "   ", "password");
+
+        User existingUser = new User();
+        existingUser.setId(userId);
+        existingUser.setUsername(sameUsername);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                userService.updateUser(userId, dto)
+        );
     }
 }

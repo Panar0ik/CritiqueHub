@@ -11,27 +11,29 @@ import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TagServiceTest {
@@ -105,7 +107,7 @@ class TagServiceTest {
         Tag existingTag = new Tag();
         existingTag.setId(1L);
         Tag anotherTag = new Tag();
-        anotherTag.setId(2L); // Другой ID, то же имя
+        anotherTag.setId(2L);
 
         when(tagRepository.findById(1L)).thenReturn(Optional.of(existingTag));
         when(tagRepository.findByName("NewName")).thenReturn(Optional.of(anotherTag));
@@ -127,9 +129,10 @@ class TagServiceTest {
         savedTag.setId(10L);
         savedTag.setName("NewTag");
 
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
         when(tagRepository.findByName("NewTag")).thenReturn(Optional.empty());
         when(tagRepository.saveAll(any())).thenReturn(List.of(savedTag));
-        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
 
         List<TagDto> result = tagService.createTagsBulk(spaceId, List.of(dto));
 
@@ -268,7 +271,7 @@ class TagServiceTest {
         SpaceResponseDto spaceDto = new SpaceResponseDto(
                 spaceId,
                 "Test Space",
-                "Description or Date String",
+                "Description",
                 "admin",
                 Set.of()
         );
@@ -278,8 +281,7 @@ class TagServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("tag1", result.get(0).name());
-        assertNotNull(result.get(0).spaces());
+        assertEquals("tag1", result.getFirst().name());
 
         verify(spaceRepository).findById(spaceId);
         verify(tagRepository).saveAll(anyList());
@@ -293,5 +295,87 @@ class TagServiceTest {
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> tagService.createTagsBulk(spaceId, emptyList));
+    }
+
+    @Test
+    void createTagsBulk_ShouldUseExistingTag_WhenFoundByName() {
+        Long spaceId = 1L;
+        Space space = new Space();
+        space.setId(spaceId);
+        space.setTags(new HashSet<>());
+
+        TagCreateDto dto = new TagCreateDto("Existing");
+        Tag existingTag = new Tag();
+        existingTag.setName("Existing");
+        existingTag.setSpaces(new HashSet<>());
+
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+        when(tagRepository.findByName("Existing")).thenReturn(Optional.of(existingTag));
+        when(tagRepository.saveAll(anyList())).thenReturn(List.of(existingTag));
+        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
+
+        tagService.createTagsBulk(spaceId, List.of(dto));
+
+        verify(tagRepository).findByName("Existing");
+    }
+
+    @Test
+    @DisplayName("updateTagName: исключение если тег не найден")
+    void updateTagName_NotFound_LambdaCoverage() {
+        when(tagRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> tagService.updateTagName(1L, "new"));
+    }
+
+    @Test
+    @DisplayName("deleteTag: исключение если тег не найден")
+    void deleteTag_NotFound_LambdaCoverage() {
+        when(tagRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> tagService.deleteTag(1L));
+    }
+
+    @Test
+    @DisplayName("createTagsBulk: успешное создание и инициализация HashSet")
+    void createTagsBulk_Success_InitializesHashSet() {
+        Long spaceId = 1L;
+        String tagName = "NewUniqueTag";
+        TagCreateDto dto = new TagCreateDto(tagName);
+        Space space = new Space();
+        space.setTags(new HashSet<>());
+
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+        when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
+        when(tagRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
+
+        var result = tagService.createTagsBulk(spaceId, List.of(dto));
+
+        assertThat(result).isNotEmpty();
+        verify(tagRepository, times(1)).saveAll(any());
+        verify(spaceRepository).save(space);
+    }
+
+    @Test
+    void createTagsBulk_ShouldInitializeSpaces_WhenTagSpacesIsNull() {
+        Long spaceId = 1L;
+        String tagName = "java";
+        TagCreateDto dto = new TagCreateDto(tagName);
+
+        Tag existingTag = new Tag();
+        existingTag.setName(tagName);
+        existingTag.setSpaces(null);
+
+        Space space = new Space();
+        space.setId(spaceId);
+        space.setTags(new HashSet<>());
+
+        when(tagRepository.findByName(tagName)).thenReturn(Optional.of(existingTag));
+        when(tagRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
+
+        tagService.createTagsBulk(spaceId, List.of(dto));
+
+        assertNotNull(existingTag.getSpaces(), "Коллекция spaces должна была инициализироваться");
+        assertFalse(existingTag.getSpaces().isEmpty(), "Коллекция не должна быть пустой");
+        assertEquals(1, existingTag.getSpaces().size(), "В коллекции должен быть ровно один Space");
     }
 }

@@ -61,7 +61,7 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(final Long id, final UserCreateDto dto) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id)); // 404
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         if (!existingUser.getUsername().equals(dto.username())
                 && userRepository.existsByUsername(dto.username())) {
