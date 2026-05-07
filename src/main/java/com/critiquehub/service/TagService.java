@@ -97,17 +97,25 @@ public class TagService {
 
         List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
-                    Tag tag = new Tag();
-                    tag.setName(dto.name());
+                    Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
+                        Tag newTag = new Tag();
+                        newTag.setName(dto.name());
+                        return newTag;
+                    });
+
                     if (tag.getSpaces() == null) {
                         tag.setSpaces(new HashSet<>());
                     }
+
                     tag.getSpaces().add(space);
+                    space.getTags().add(tag);
+
                     return tag;
                 })
                 .toList();
 
         List<Tag> savedTags = tagRepository.saveAll(tagsToSave);
+        spaceRepository.save(space);
 
         return savedTags.stream()
                 .map(tag -> new TagDto(

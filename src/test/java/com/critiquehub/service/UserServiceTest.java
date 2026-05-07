@@ -8,26 +8,21 @@ import com.critiquehub.model.User;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -45,166 +40,197 @@ class UserServiceTest {
     private UserService userService;
 
     @Test
-    void createUser_Success() {
-        UserCreateDto dto = new UserCreateDto("john", "john@mail.com", "pass");
-        User user = new User();
-        UserResponseDto expected = new UserResponseDto(1L, "john", "john@mail.com");
-
-        when(userRepository.existsByUsername(dto.username())).thenReturn(false);
-        when(userMapper.toEntity(dto)).thenReturn(user);
-        when(userRepository.save(user)).thenReturn(user);
-        when(userMapper.toDto(user)).thenReturn(expected);
-
-        UserResponseDto result = userService.createUser(dto);
-
-        assertNotNull(result);
-        assertEquals("john", result.username());
-        verify(userRepository).save(user);
-    }
-
-    @Test
-    void createUser_Conflict_ThrowsException() {
-        UserCreateDto dto = new UserCreateDto("exists", "e@mail.com", "pass");
-        when(userRepository.existsByUsername("exists")).thenReturn(true);
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                () -> userService.createUser(dto));
-
-        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
-    }
-
-    @Test
+    @DisplayName("findAll: success")
     void findAll_Success() {
-        when(userRepository.findAll()).thenReturn(List.of(new User()));
-        when(userMapper.toDto(any())).thenReturn(new UserResponseDto(1L, "u", "e"));
+        User user = new User();
+        UserResponseDto dto = new UserResponseDto(1L, "user", "e@m.com");
+        when(userRepository.findAll()).thenReturn(List.of(user));
+        when(userMapper.toDto(user)).thenReturn(dto);
 
         List<UserResponseDto> result = userService.findAll();
 
-        assertEquals(1, result.size());
+        assertThat(result).hasSize(1).containsExactly(dto);
     }
 
     @Test
-    void findById_Success() {
-        Long id = 1L;
+    @DisplayName("createUser: success")
+    void createUser_Success() {
+        UserCreateDto createDto = new UserCreateDto("test", "t@m.com", "p");
         User user = new User();
-        UserResponseDto dto = new UserResponseDto(id, "u", "e");
+        User saved = new User();
+        saved.setUsername("test");
+        UserResponseDto resp = new UserResponseDto(1L, "test", "t@m.com");
 
-        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        when(userRepository.existsByUsername(createDto.username())).thenReturn(false);
+        when(userMapper.toEntity(createDto)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(saved);
+        when(userMapper.toDto(saved)).thenReturn(resp);
+
+        UserResponseDto result = userService.createUser(createDto);
+        assertThat(result).isEqualTo(resp);
+    }
+
+    @Test
+    @DisplayName("createUser: throw exception when username taken")
+    void createUser_Conflict() {
+        UserCreateDto dto = new UserCreateDto("taken", "a@b.com", "p");
+        when(userRepository.existsByUsername("taken")).thenReturn(true);
+        assertThatThrownBy(() -> userService.createUser(dto))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    @DisplayName("findById: success")
+    void findById_Success() {
+        User user = new User();
+        UserResponseDto dto = new UserResponseDto(1L, "user", "u@m.com");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(dto);
 
-        UserResponseDto result = userService.findById(id);
-
-        assertNotNull(result);
-        assertEquals(id, result.id());
+        UserResponseDto result = userService.findById(1L);
+        assertThat(result).isEqualTo(dto);
     }
 
     @Test
-    void findById_NotFound_ThrowsException() {
+    @DisplayName("findById: throw exception when not found")
+    void findById_NotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> userService.findById(1L));
+        assertThatThrownBy(() -> userService.findById(1L))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
-    void updateUser_Success() {
+    @DisplayName("updateUser: success with same username")
+    void updateUser_SameUsername_Success() {
         Long id = 1L;
-        UserCreateDto dto = new UserCreateDto("newNick", "new@mail.com", "newPass");
-        User existingUser = new User();
-        existingUser.setUsername("oldNick");
+        User existing = new User();
+        existing.setUsername("name");
+        UserCreateDto dto = new UserCreateDto("name", "new@e.com", "p");
+        UserResponseDto resp = new UserResponseDto(id, "name", "new@e.com");
 
-        when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
-        when(userRepository.existsByUsername("newNick")).thenReturn(false);
-        when(userRepository.save(existingUser)).thenReturn(existingUser);
-        when(userMapper.toDto(existingUser)).thenReturn(new UserResponseDto(id, "newNick", "new@mail.com"));
+        when(userRepository.findById(id)).thenReturn(Optional.of(existing));
+        when(userRepository.save(existing)).thenReturn(existing);
+        when(userMapper.toDto(existing)).thenReturn(resp);
 
         UserResponseDto result = userService.updateUser(id, dto);
-
-        assertEquals("newNick", result.username());
-        verify(userRepository).save(existingUser);
+        assertThat(result).isEqualTo(resp);
     }
 
     @Test
-    void updateUser_UsernameTaken_ThrowsException() {
+    @DisplayName("updateUser: success with new username")
+    void updateUser_NewUsername_Success() {
         Long id = 1L;
-        UserCreateDto dto = new UserCreateDto("taken", "e@mail.com", "p");
-        User existingUser = new User();
-        existingUser.setUsername("myNick");
+        User existing = new User();
+        existing.setUsername("old");
+        UserCreateDto dto = new UserCreateDto("new", "e@e.com", "p");
+        UserResponseDto resp = new UserResponseDto(id, "new", "e@e.com");
 
-        when(userRepository.findById(id)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findById(id)).thenReturn(Optional.of(existing));
+        when(userRepository.existsByUsername("new")).thenReturn(false);
+        when(userRepository.save(existing)).thenReturn(existing);
+        when(userMapper.toDto(existing)).thenReturn(resp);
+
+        UserResponseDto result = userService.updateUser(id, dto);
+        assertThat(result).isEqualTo(resp);
+    }
+
+    @Test
+    @DisplayName("updateUser: throw exception when new username taken")
+    void updateUser_UsernameTaken() {
+        User existing = new User();
+        existing.setUsername("old");
+        UserCreateDto dto = new UserCreateDto("taken", "e@e.com", "p");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(userRepository.existsByUsername("taken")).thenReturn(true);
 
-        assertThrows(EntityNotFoundException.class, () -> userService.updateUser(id, dto));
+        assertThatThrownBy(() -> userService.updateUser(1L, dto))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
+    @DisplayName("updateUser: throw exception when email blank")
+    void updateUser_EmailBlank_ThrowsException() {
+        User existing = new User();
+        existing.setUsername("name");
+        UserCreateDto dto = new UserCreateDto("name", "  ", "p");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> userService.updateUser(1L, dto))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("updateUser: throw exception when email null")
+    void updateUser_EmailNull_ThrowsException() {
+        User existing = new User();
+        existing.setUsername("name");
+        UserCreateDto dto = new UserCreateDto("name", null, "p");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> userService.updateUser(1L, dto))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("deleteUser: success")
     void deleteUser_Success() {
-        Long id = 1L;
-        when(userRepository.existsById(id)).thenReturn(true);
-
-        userService.deleteUser(id);
-
-        verify(userRepository).deleteById(id);
+        User user = new User();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        userService.deleteUser(1L);
+        verify(userRepository).delete(user);
     }
 
     @Test
-    void deleteUser_NotFound_ThrowsException() {
-        when(userRepository.existsById(1L)).thenReturn(false);
-        assertThrows(EntityNotFoundException.class, () -> userService.deleteUser(1L));
+    @DisplayName("deleteUser: throw exception when not found")
+    void deleteUser_NotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> userService.deleteUser(1L))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
+    @DisplayName("getUserFavorites: success")
     void getUserFavorites_Success() {
-        Long userId = 1L;
         User user = new User();
-        Set<Space> spaces = new HashSet<>();
+        Set<Space> spaces = Set.of(new Space());
         user.setFavoriteSpaces(spaces);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        Set<Space> result = userService.getUserFavorites(userId);
-
-        assertEquals(spaces, result);
+        Set<Space> result = userService.getUserFavorites(1L);
+        assertThat(result).isEqualTo(spaces);
     }
 
     @Test
-    void addSpaceToFavorites_Success() {
-        Long userId = 1L;
-        Long spaceId = 2L;
-        User user = new User();
-        user.setFavoriteSpaces(new HashSet<>());
-        Space space = new Space();
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
-
-        userService.addSpaceToFavorites(userId, spaceId);
-
-        assertTrue(user.getFavoriteSpaces().contains(space));
-    }
-
-    @Test
-    void removeSpaceFromFavorites_Success() {
-        Long userId = 1L;
-        Long spaceId = 2L;
-        User user = new User();
-        Space space = new Space();
-        Set<Space> favorites = new HashSet<>();
-        favorites.add(space);
-        user.setFavoriteSpaces(favorites);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
-
-        userService.removeSpaceFromFavorites(userId, spaceId);
-
-        assertTrue(user.getFavoriteSpaces().isEmpty());
-        verify(userRepository).save(user);
-    }
-
-    @Test
-    void removeSpaceFromFavorites_SpaceNotFound_ThrowsException() {
+    @DisplayName("addSpaceToFavorites: throw exception when space not found")
+    void addSpaceToFavorites_SpaceNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(new User()));
         when(spaceRepository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> userService.removeSpaceFromFavorites(1L, 2L));
+        assertThatThrownBy(() -> userService.addSpaceToFavorites(1L, 2L))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: success if present")
+    void removeSpaceFromFavorites_Success() {
+        User user = new User();
+        Space space = new Space();
+        user.getFavoriteSpaces().add(space);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(spaceRepository.findById(2L)).thenReturn(Optional.of(space));
+
+        userService.removeSpaceFromFavorites(1L, 2L);
+
+        assertThat(user.getFavoriteSpaces()).isEmpty();
+        verify(userRepository).saveAndFlush(user);
+    }
+
+    @Test
+    @DisplayName("removeSpaceFromFavorites: user not found")
+    void removeSpaceFromFavorites_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> userService.removeSpaceFromFavorites(1L, 2L))
+                .isInstanceOf(EntityNotFoundException.class);
     }
 }

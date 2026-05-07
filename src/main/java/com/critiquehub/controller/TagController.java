@@ -1,5 +1,6 @@
 package com.critiquehub.controller;
 
+import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
 import com.critiquehub.mapper.TagMapper;
 import com.critiquehub.model.Tag;
@@ -56,6 +57,16 @@ public class TagController {
     @Operation(summary = "Update tag name")
     public Tag update(final @PathVariable Long id, final @RequestBody String newName) {
         return tagService.updateTagName(id, newName);
+    }
+
+    @PostMapping("/bulk/{spaceId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Bulk create tags for space")
+    public List<TagDto> createTagsBulk(
+            final @PathVariable Long spaceId,
+            final @RequestBody List<TagCreateDto> tagDtos
+    ) {
+        return tagService.createTagsBulk(spaceId, tagDtos);
     }
 
     @DeleteMapping("/{id}")
