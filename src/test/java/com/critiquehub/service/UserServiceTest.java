@@ -338,9 +338,13 @@ class UserServiceTest {
     @Test
     @DisplayName("updateUser: выброс исключения при поиске пользователя")
     void updateUser_UserNotFound_LambdaCoverage() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        Long userId = 1L;
+        UserCreateDto dto = new UserCreateDto("new", "e@e.com", "p");
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
         assertThrows(EntityNotFoundException.class, () ->
-                userService.updateUser(1L, new UserCreateDto("new", "e@e.com", "p")));
+                userService.updateUser(userId, dto)
+        );
     }
 
     @Test
