@@ -14,9 +14,7 @@ public class LoggingAspect {
     @Around("@annotation(com.critiquehub.util.aspect.LogExecutionTime)")
     public Object logExecutionTime(final ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.currentTimeMillis();
-
         Object proceed = joinPoint.proceed();
-
         long executionTime = System.currentTimeMillis() - start;
 
         log.info("Method {} executed in {}ms", joinPoint.getSignature().toShortString(), executionTime);
