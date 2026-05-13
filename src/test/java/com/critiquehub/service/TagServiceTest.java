@@ -320,21 +320,21 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("updateTagName: исключение если тег не найден")
+    @DisplayName("updateTagName: throw exception if tag not found")
     void updateTagName_NotFound_LambdaCoverage() {
         when(tagRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> tagService.updateTagName(1L, "new"));
     }
 
     @Test
-    @DisplayName("deleteTag: исключение если тег не найден")
+    @DisplayName("deleteTag: throw exception if tag not found")
     void deleteTag_NotFound_LambdaCoverage() {
         when(tagRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> tagService.deleteTag(1L));
     }
 
     @Test
-    @DisplayName("createTagsBulk: успешное создание и инициализация HashSet")
+    @DisplayName("createTagsBulk: success creation and HashSet initialization")
     void createTagsBulk_Success_InitializesHashSet() {
         Long spaceId = 1L;
         String tagName = "NewUniqueTag";
@@ -355,6 +355,7 @@ class TagServiceTest {
     }
 
     @Test
+    @DisplayName("createTagsBulk: should initialize spaces when tag spaces is null")
     void createTagsBulk_ShouldInitializeSpaces_WhenTagSpacesIsNull() {
         Long spaceId = 1L;
         String tagName = "java";
@@ -374,8 +375,8 @@ class TagServiceTest {
 
         tagService.createTagsBulk(spaceId, List.of(dto));
 
-        assertNotNull(existingTag.getSpaces(), "Коллекция spaces должна была инициализироваться");
-        assertFalse(existingTag.getSpaces().isEmpty(), "Коллекция не должна быть пустой");
-        assertEquals(1, existingTag.getSpaces().size(), "В коллекции должен быть ровно один Space");
+        assertNotNull(existingTag.getSpaces(), "The spaces collection should have been initialized");
+        assertFalse(existingTag.getSpaces().isEmpty(), "The collection should not be empty");
+        assertEquals(1, existingTag.getSpaces().size(), "The collection should contain exactly one Space");
     }
 }

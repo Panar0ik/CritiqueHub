@@ -336,7 +336,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser: выброс исключения при поиске пользователя")
+    @DisplayName("updateUser: throw exception when user not found")
     void updateUser_UserNotFound_LambdaCoverage() {
         Long userId = 1L;
         UserCreateDto dto = new UserCreateDto("new", "e@e.com", "p");
@@ -348,7 +348,7 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addSpaceToFavorites: выброс исключения при поиске Space")
+    @DisplayName("addSpaceToFavorites: throw exception when space not found")
     void addSpaceToFavorites_SpaceNotFound_LambdaCoverage() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(new User()));
         when(spaceRepository.findById(anyLong())).thenReturn(Optional.empty());
@@ -356,17 +356,17 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUserFavorites: выброс исключения при поиске пользователя")
+    @DisplayName("getUserFavorites: throw exception when user not found")
     void getUserFavorites_UserNotFound_LambdaCoverage() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> userService.getUserFavorites(1L));
     }
 
     @Test
-    @DisplayName("removeSpaceFromFavorites: если объекта нет в списке, сохранение не вызывается")
+    @DisplayName("removeSpaceFromFavorites: save is not called if object is not in the list")
     void removeSpaceFromFavorites_NotPresent_NoSave() {
         User user = new User();
-        user.setFavoriteSpaces(new HashSet<>()); // Пусто
+        user.setFavoriteSpaces(new HashSet<>()); // Empty
         Space space = new Space();
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(spaceRepository.findById(anyLong())).thenReturn(Optional.of(space));
