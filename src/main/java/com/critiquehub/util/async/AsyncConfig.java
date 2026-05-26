@@ -33,8 +33,6 @@ public class AsyncConfig {
         executor.setQueueCapacity(queueCapacity);
         executor.setThreadNamePrefix(threadNamePrefix);
 
-        // Стратегия на случай переполнения очереди (например, при твоих 1 млн запросов в JMeter)
-        // CallerRunsPolicy заставит главный поток выполнить задачу, если пул перегружен, вместо падения с ошибкой
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 
         executor.initialize();

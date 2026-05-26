@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApplyAsync {
-    String value() default "Generic Async Task"; // Название операции для БД
+    String value() default "Generic Async Task";
 }

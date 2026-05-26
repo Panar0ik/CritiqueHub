@@ -15,7 +15,6 @@ public class OperationService {
 
     private final OperationRepository repository;
 
-    // 1. Быстрая синхронная регистрация
     public String register(final String opName) {
         String id = UUID.randomUUID().toString();
 
@@ -35,7 +34,7 @@ public class OperationService {
         try {
             update(id, "IN_PROGRESS", "Task started");
 
-            task.run(); // Запуск переданной логики
+            task.run();
 
             update(id, "COMPLETED", "Success");
         } catch (Exception e) {
@@ -44,7 +43,6 @@ public class OperationService {
         }
     }
 
-    // Метод обновления статуса
     public void update(final String id, final String state, final String payload) {
         repository.findById(id).ifPresent(op -> {
             op.setState(state);

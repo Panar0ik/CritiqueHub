@@ -22,7 +22,7 @@ public class Operation {
     @Id
     private String id;
     private String name;
-    private String state; // START, IN_PROGRESS, COMPLETED, ERROR
+    private String state;
     private String payload;
     private LocalDateTime updatedAt;
 }
