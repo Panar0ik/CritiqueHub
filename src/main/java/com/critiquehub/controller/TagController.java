@@ -5,9 +5,11 @@ import com.critiquehub.dto.TagDto;
 import com.critiquehub.mapper.TagMapper;
 import com.critiquehub.model.Tag;
 import com.critiquehub.service.TagService;
+import com.critiquehub.util.async.OperationService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +31,7 @@ public class TagController {
 
     private final TagService tagService;
     private final TagMapper tagMapper;
+    private final OperationService operationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -62,11 +65,20 @@ public class TagController {
     @PostMapping("/bulk/{spaceId}")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Bulk create tags for space")
-    public List<TagDto> createTagsBulk(
+    public ResponseEntity<String> createTagsBulk(
             final @PathVariable Long spaceId,
             final @RequestBody List<TagCreateDto> dtos
     ) {
-        return tagService.createTagsBulk(spaceId, dtos);
+        // 1. Быстро регистрируем задачу в БД и получаем UUID
+        String operationId = operationService.register("Массовое создание тегов");
+
+        // 2. Явно отдаем задачу в асинхронный поток через пул
+        operationService.runTask(operationId, () -> {
+            tagService.createTagsBulkRaw(spaceId, dtos);
+        });
+
+        // 3. Мгновенно возвращаем 202 Accepted и UUID
+        return ResponseEntity.accepted().body(operationId);
     }
 
     @DeleteMapping("/{id}")

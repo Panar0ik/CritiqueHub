@@ -8,7 +8,6 @@ import com.critiquehub.model.Tag;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.util.aspect.LogExecutionTime;
-import com.critiquehub.util.async.ApplyAsync;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -92,7 +90,7 @@ public class TagService {
 
     @LogExecutionTime
     @Transactional
-    public List<TagDto> createTagsBulk(final Long spaceId, final List<TagCreateDto> dtos) {
+    public void createTagsBulkRaw(final Long spaceId, final List<TagCreateDto> dtos) {
         List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
                     Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
@@ -100,7 +98,6 @@ public class TagService {
                         newTag.setName(dto.name());
                         return newTag;
                     });
-
                     if (tag.getSpaces() == null) {
                         tag.setSpaces(new HashSet<>());
                     }
@@ -118,19 +115,6 @@ public class TagService {
             tag.getSpaces().add(space);
             space.getTags().add(tag);
         }
-
         spaceRepository.save(space);
-
-        return savedTags.stream()
-                .map(tag -> new TagDto(
-                        tag.getId(),
-                        tag.getName(),
-                        Optional.ofNullable(tag.getSpaces())
-                                .orElse(new HashSet<>())
-                                .stream()
-                                .map(spaceMapper::toDto)
-                                .toList()
-                ))
-                .toList();
     }
 }

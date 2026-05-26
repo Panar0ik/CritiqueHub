@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -118,7 +117,7 @@ class TagServiceTest {
     }
 
     @Test
-    void createTagsBulk_ShouldWorkCorrectly() {
+    void createTagsBulkRaw_ShouldWorkCorrectly() {
         Long spaceId = 1L;
         Space space = new Space();
         space.setId(spaceId);
@@ -128,17 +127,19 @@ class TagServiceTest {
         Tag savedTag = new Tag();
         savedTag.setId(10L);
         savedTag.setName("NewTag");
+        savedTag.setSpaces(new HashSet<>());
 
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
         when(tagRepository.findByName("NewTag")).thenReturn(Optional.empty());
         when(tagRepository.saveAll(any())).thenReturn(List.of(savedTag));
-        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
 
-        List<TagDto> result = tagService.createTagsBulk(spaceId, List.of(dto));
+        tagService.createTagsBulkRaw(spaceId, List.of(dto));
 
-        assertThat(result).hasSize(1);
-        verify(spaceRepository).save(space);
+        verify(tagRepository).findByName("NewTag");
+        verify(tagRepository).saveAll(any());
         verify(tagRepository).flush();
+        verify(spaceRepository).findById(spaceId);
+        verify(spaceRepository).save(space);
     }
 
     @Test
@@ -242,63 +243,17 @@ class TagServiceTest {
     }
 
     @Test
-    void createTagsBulk_Success() {
-        Long spaceId = 1L;
-        User owner = new User();
-        owner.setUsername("admin");
-
-        Space space = new Space();
-        space.setId(spaceId);
-        space.setName("Test Space");
-        space.setOwner(owner);
-        space.setTags(new HashSet<>());
-
-        List<TagCreateDto> dtos = List.of(new TagCreateDto("tag1"), new TagCreateDto("tag2"));
-
-        Tag tag1 = new Tag();
-        tag1.setId(10L);
-        tag1.setName("tag1");
-        tag1.setSpaces(new HashSet<>(Set.of(space)));
-
-        Tag tag2 = new Tag();
-        tag2.setId(11L);
-        tag2.setName("tag2");
-        tag2.setSpaces(new HashSet<>(Set.of(space)));
-
-        when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
-        when(tagRepository.saveAll(anyList())).thenReturn(List.of(tag1, tag2));
-
-        SpaceResponseDto spaceDto = new SpaceResponseDto(
-                spaceId,
-                "Test Space",
-                "Description",
-                "admin",
-                Set.of()
-        );
-        when(spaceMapper.toDto(any(Space.class))).thenReturn(spaceDto);
-
-        List<TagDto> result = tagService.createTagsBulk(spaceId, dtos);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("tag1", result.getFirst().name());
-
-        verify(spaceRepository).findById(spaceId);
-        verify(tagRepository).saveAll(anyList());
-    }
-
-    @Test
-    void createTagsBulk_SpaceNotFound_ThrowsException() {
+    void createTagsBulkRaw_SpaceNotFound_ThrowsException() {
         Long spaceId = 1L;
         List<TagCreateDto> emptyList = List.of();
 
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> tagService.createTagsBulk(spaceId, emptyList));
+        assertThrows(EntityNotFoundException.class, () -> tagService.createTagsBulkRaw(spaceId, emptyList));
     }
 
     @Test
-    void createTagsBulk_ShouldUseExistingTag_WhenFoundByName() {
+    void createTagsBulkRaw_ShouldUseExistingTag_WhenFoundByName() {
         Long spaceId = 1L;
         Space space = new Space();
         space.setId(spaceId);
@@ -312,9 +267,8 @@ class TagServiceTest {
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
         when(tagRepository.findByName("Existing")).thenReturn(Optional.of(existingTag));
         when(tagRepository.saveAll(anyList())).thenReturn(List.of(existingTag));
-        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
 
-        tagService.createTagsBulk(spaceId, List.of(dto));
+        tagService.createTagsBulkRaw(spaceId, List.of(dto));
 
         verify(tagRepository).findByName("Existing");
     }
@@ -335,7 +289,7 @@ class TagServiceTest {
 
     @Test
     @DisplayName("createTagsBulk: success creation and HashSet initialization")
-    void createTagsBulk_Success_InitializesHashSet() {
+    void createTagsBulkRaw_Success_InitializesHashSet() {
         Long spaceId = 1L;
         String tagName = "NewUniqueTag";
         TagCreateDto dto = new TagCreateDto(tagName);
@@ -345,18 +299,16 @@ class TagServiceTest {
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
         when(tagRepository.findByName(tagName)).thenReturn(Optional.empty());
         when(tagRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(spaceMapper.toDto(any())).thenReturn(new SpaceResponseDto(1L, "S", "D", "O", Set.of()));
 
-        var result = tagService.createTagsBulk(spaceId, List.of(dto));
+        tagService.createTagsBulkRaw(spaceId, List.of(dto));
 
-        assertThat(result).isNotEmpty();
         verify(tagRepository, times(1)).saveAll(any());
         verify(spaceRepository).save(space);
     }
 
     @Test
     @DisplayName("createTagsBulk: should initialize spaces when tag spaces is null")
-    void createTagsBulk_ShouldInitializeSpaces_WhenTagSpacesIsNull() {
+    void createTagsBulkRaw_ShouldInitializeSpaces_WhenTagSpacesIsNull() {
         Long spaceId = 1L;
         String tagName = "java";
         TagCreateDto dto = new TagCreateDto(tagName);
@@ -373,10 +325,10 @@ class TagServiceTest {
         when(tagRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(spaceRepository.findById(spaceId)).thenReturn(Optional.of(space));
 
-        tagService.createTagsBulk(spaceId, List.of(dto));
+        tagService.createTagsBulkRaw(spaceId, List.of(dto));
 
-        assertNotNull(existingTag.getSpaces(), "The spaces collection should have been initialized");
-        assertFalse(existingTag.getSpaces().isEmpty(), "The collection should not be empty");
-        assertEquals(1, existingTag.getSpaces().size(), "The collection should contain exactly one Space");
+        assertNotNull(existingTag.getSpaces());
+        assertFalse(existingTag.getSpaces().isEmpty());
+        assertEquals(1, existingTag.getSpaces().size());
     }
 }
