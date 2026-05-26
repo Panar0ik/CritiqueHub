@@ -8,50 +8,50 @@ const apiClient = axios.create({ baseURL: "http://localhost:8080/api" });
 export default function HomePage() {
   const [tags, setTags] = useState([]);
   const [spaces, setSpaces] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [favorites, setFavorites] = useState([]);
 
   const { user } = useAuth();
+  const userId = user?.id || user?.userId; // Получаем ID авторизованного юзера
 
   useEffect(() => {
     apiClient.get("/tags").then(res => setTags(res.data.slice(0, 10)));
     apiClient.get("/spaces").then(res => setSpaces(res.data));
 
-    const userId = user?.id || user?.userId;
-
-        if (userId) {
-          apiClient.get(`/users/${userId}/favorites`)
-            .then(res => {
-              // Предполагаем, что сервер возвращает массив объектов избранного
-              setFavorites(res.data);
-            })
-            .catch(err => {
-              console.error("Не удалось загрузить избранное:", err);
-            });
-        } else {
-          // Если пользователя нет, очищаем список избранного (на случай разлогина)
-          setFavorites([]);
-        }
-  }, [user]);
+    if (userId) {
+      apiClient.get(`/users/${userId}/favorites`)
+        .then(res => {
+          setFavorites(res.data);
+        })
+        .catch(err => {
+          console.error("Не удалось загрузить избранное:", err);
+        });
+    } else {
+      setFavorites([]);
+    }
+  }, [userId]); // Ловим изменения userId (вход/выход)
 
   return (
     <div className="body-container">
 
-      {/* ЛЕВАЯ КОЛОНКА */}
+      {/* ЛЕВАЯ КОЛОНКА (Синхронизирована со стилями SpacePage) */}
       <aside className="sidebar">
-        <h3 className="sidebar-title" style={{ fontSize: "18px" }}>ИЗБРАННОЕ:</h3>
-        <div className="favorites-content" style={{ marginTop: "15px" }}>
-           {/* Проверяем, есть ли пользователь в контексте */}
+        <h3 className="sidebar-title">ИЗБРАННОЕ</h3>
+        <div className="favorites-content">
            {!user ? (
-              <p className="favorites-container">
+              <p className="favorites-empty-text">
                 Чтобы увидеть избранное, <Link to="/login" className="login-link">войдите</Link>.
               </p>
            ) : favorites.length > 0 ? (
               <ul className="tags-list">
-                {favorites.map(fav => <li key={fav.id} className="fav-item-sidebar">★ {fav.name}</li>)}
+                {favorites.map(fav => (
+                  /* Применяем те же классы fav-item-sidebar и оборачиваем в Link */
+                  <li key={fav.id} className="fav-item-sidebar">
+                    <Link to={`/spaces/${fav.id}`}>★ {fav.name}</Link>
+                  </li>
+                ))}
               </ul>
            ) : (
-              <p className="favorites-container">Пока избранных нет.</p>
+              <p className="favorites-empty-text">Пока избранных нет.</p>
            )}
         </div>
       </aside>
