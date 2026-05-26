@@ -8,6 +8,7 @@ import com.critiquehub.model.Tag;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.util.aspect.LogExecutionTime;
+import com.critiquehub.util.async.ApplyAsync;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
