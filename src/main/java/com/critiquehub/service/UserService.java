@@ -1,6 +1,7 @@
 package com.critiquehub.service;
 
 import com.critiquehub.dto.UserCreateDto;
+import com.critiquehub.dto.UserLoginRequest;
 import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.mapper.UserMapper;
 import com.critiquehub.model.Space;
@@ -9,6 +10,7 @@ import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
 import com.critiquehub.util.aspect.LogExecutionTime;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -121,5 +123,19 @@ public class UserService {
         if (user.getFavoriteSpaces().remove(space)) {
             userRepository.saveAndFlush(user);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto login(final UserLoginRequest request, final HttpSession session) {
+        final User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!user.getPassword().equals(request.password())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
+        session.setAttribute("currentUser", user.getId());
+
+        return new UserResponseDto(user.getId(), user.getUsername(), user.getEmail());
     }
 }

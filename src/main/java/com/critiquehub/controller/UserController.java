@@ -2,11 +2,13 @@ package com.critiquehub.controller;
 
 import com.critiquehub.dto.SpaceResponseDto;
 import com.critiquehub.dto.UserCreateDto;
+import com.critiquehub.dto.UserLoginRequest;
 import com.critiquehub.dto.UserResponseDto;
 import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -85,5 +87,21 @@ public class UserController {
     @Operation(summary = "Remove space from user favorites")
     public void removeFavorite(final @PathVariable Long userId, final @PathVariable Long spaceId) {
         userService.removeSpaceFromFavorites(userId, spaceId);
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "User login")
+    public ResponseEntity<UserResponseDto> login(
+            final @Valid @RequestBody UserLoginRequest request,
+            final HttpSession session
+    ) {
+        return ResponseEntity.ok(userService.login(request, session));
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "User logout")
+    public void logout(final HttpSession session) {
+        session.invalidate();
     }
 }

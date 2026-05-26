@@ -1,19 +1,19 @@
 .app {
   width: 100%;
   height: 100%;
-  padding: 30px;
+  padding: 10px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px;
   width: 100%;
 }
 
 .logo {
   color: white;
-  font-size: 48px;
+  font-size: 28px;
   font-weight: bold;
   font-family: Arial, sans-serif;
   user-select: none;
@@ -23,47 +23,47 @@
 .search-wrapper {
   flex: 1;
   display: flex;
-  align-items: center; /* Центрирует иконку и инпут по вертикали */
-  justify-content: center; /* Центрирует группу по горизонтали */
+  align-items: center;
+  justify-content: center;
   background: #292828;
-  border-radius: 14px;
-  max-width: 1000px;
-  padding: 0 20px;
-  margin: 0 auto; /* Убеждаемся, что сам wrapper по центру */
+  border-radius: 10px;
+  max-width: 900px;
+  padding: 0 15px;
+  margin: 0 auto;
 }
 
 .search-icon {
   display: flex;
   align-items: center;
   color: #777;
-  margin-right: 12px; /* Отступ между лупой и текстом */
+  margin-right: 8px;
 }
 
 .search-input {
   width: 100%;
-  padding: 18px 0; /* Убираем лишние боковые отступы */
-  background: transparent; /* Фон теперь у самого wrapper */
+  padding: 14px 0;
+  background: transparent;
   border: none;
   outline: none;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .auth-buttons {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   white-space: nowrap;
 }
 
 .login-btn,
 .register-btn {
-  padding: 10px 20px;
-  min-width: 130px;
-  height: 40px;
+  padding: 8px 15px;
+  min-width: 10px;
+  height: 35px;
   border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
   font-family: Arial, sans-serif;
   cursor: pointer;
   transition: 0.2s ease;
@@ -78,7 +78,7 @@
 }
 
 .login-btn:hover {
-  background: #333;
+  background: green;
 }
 
 .register-btn {
@@ -87,21 +87,23 @@
 }
 
 .register-btn:hover {
-  opacity: 0.9;
+  background: #1159b8;
+  color: white;
 }
 
 .horizontal-line {
   width: 100%;
   height: 1px;
   background: #333;
-  margin-top: 20px;
+  margin-top: 10px;
   margin-bottom: 0;
   display: block;
 }
 
 .body-container {
   display: flex;
-  height: calc(100vh - 110px);
+  height: calc(100vh - 80px);
+  overflow: hidden;
 }
 
 .vertical-line {
@@ -110,25 +112,26 @@
   background: #333;
 }
 
-.sidebar {
-  width: 220px;
+.sidebar, .sidebar-right {
+  width: 280px;
   padding: 20px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .sidebar-title {
   color: white;
-  font-size: 24px;
-  margin-bottom: 0;
+  font-size: 20px;
+  margin-bottom: 5px;
 }
 
 .tags-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .tags-list li {
@@ -136,7 +139,7 @@
   color: white;
   padding: 8px 15px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
   display: inline-block;
@@ -147,72 +150,36 @@
   background: #3d3d3d;
 }
 
-.spaces-container {
-  background: #1c1c1c;
-  border: 1px solid #333;
-  border-radius: 16px;
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 20px;
-}
-
-.spaces-title {
-  color: #fff;
-  font-size: 16px;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-.spaces-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.spaces-list li {
-  color: #ccc;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: 0.2s;
-}
-
-.spaces-list li:hover {
-  background: #292828;
-  color: white;
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 15px;
 }
 
 .main-content-wrapper {
   margin-top: 20px;
-  margin-left: 20px;
-  width: calc(100% - 40px);
+  margin-left: 15px;
+  width: calc(100% - 30px);
 }
 
 .main-title {
   color: white;
   margin-bottom: 20px;
-  font-size: 36px;
-}
-
-.spaces-container-main {
-  width: 100%;
+  font-size: 32px;
 }
 
 .spaces-list-main {
   list-style: none;
   display: grid;
-  /* Растягиваем на всю ширину: 1fr означает одну колонку, занимающую все место */
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 15px;
   padding: 0;
 }
 
 .space-item-main {
   background: #292828;
   padding: 25px;
-  border-radius: 16px;
+  border-radius: 15px;
   border: 1px solid #333;
   color: white;
   display: flex;
@@ -227,21 +194,21 @@
 
 .space-tags {
   display: flex;
-  gap: 8px;
-  margin-top: 15px;
-  flex-wrap: wrap; /* Если тегов много, они перенесутся на новую строку */
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .space-tag-item {
   background: #3d3d3d;
   color: #ccc;
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 10px;
   font-size: 12px;
 }
 
 .space-name {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   font-size: 20px;
   color: white;
 }
@@ -253,18 +220,11 @@
   line-height: 1.4;
 }
 
-.spaces-list-main {
-  list-style: none; /* Убираем маркеры списка */
-  display: grid;
-  grid-template-columns: 1fr; /* Одна колонка на всю ширину */
-  gap: 20px; /* Расстояние между карточками */
-  padding: 0;
-}
-
-.favorites-container p {
+.favorites-container {
   font-size: 14px;
   line-height: 1.4;
   margin: 0;
+  color: #888;
 }
 
 .login-link {
@@ -281,27 +241,7 @@
   color: #aaa;
 }
 
-.favorites-content {
-  padding-right: 10px;
-}
-
-/* Правый сайдбар */
-.sidebar-right {
-  width: 220px;
-  padding: 20px;
-  flex-shrink: 0;
-  overflow-y: auto;
-}
-
-/* Обновляем body-container, чтобы он учитывал новую структуру */
-.body-container {
-  display: flex;
-  height: calc(100vh - 110px);
-  overflow: hidden;
-}
-
-.content {
-  flex: 1; /* Центр занимает всё свободное место */
-  overflow-y: auto;
-  padding: 0 20px;
+.fav-item-sidebar {
+  font-size: 14px;
+  color: #ffd700;
 }

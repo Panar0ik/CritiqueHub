@@ -1,0 +1,34 @@
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #1c1c1c;
+}
+
+.auth-form {
+  background: #292828;
+  padding: 40px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 350px;
+}
+
+.auth-form input {
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #1c1c1c;
+  color: white;
+}
+
+.auth-form button {
+  padding: 15px;
+  border-radius: 10px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-weight: bold;
+}

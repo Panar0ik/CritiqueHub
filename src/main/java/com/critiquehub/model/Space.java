@@ -10,13 +10,17 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "spaces")
 public class Space {
     @Id
@@ -28,6 +32,8 @@ public class Space {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @JoinColumn(name = "owner_id")
     private User owner;
 
@@ -37,5 +43,7 @@ public class Space {
             joinColumns = @JoinColumn(name = "space_id"),
             inverseJoinColumns = @JoinColumn(name = "tags_id")
     )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Tag> tags = new HashSet<>();
 }
