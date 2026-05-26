@@ -30,7 +30,6 @@ public class OperationService {
         return id;
     }
 
-    // 2. Асинхронное выполнение в отдельном потоке
     @Async("taskExecutor")
     public void runTask(final String id, final Runnable task) {
         try {
