@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./Auth.css"; // Твои стили для авторизации
+import "./Auth.css";
 
-// Настройка клиента axios (убедись, что адрес бэкенда совпадает)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 const apiClient = axios.create({ baseURL: API_BASE_URL });
 
@@ -14,8 +13,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth(); // Достаем метод login из контекста
-  const navigate = useNavigate(); // Хук для программного перенаправления
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,26 +22,35 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Отправляем POST-запрос на бэкенд с телом { email, password }
       const response = await apiClient.post("/users/login", {
         email,
         password,
       });
 
-      // Предполагаем, что бэкенд возвращает объект пользователя, например: { id, email, name, token }
       const userData = response.data;
-
-      // Сохраняем пользователя в контекст (после этого Header сразу обновится)
       login(userData);
-
-      // Уводим пользователя на главную страницу
       navigate("/");
     } catch (err) {
       console.error("Ошибка при входе:", err);
-      // Выводим ошибку от бэкенда или дефолтное сообщение
-      setError(
-        err.response?.data?.message || "Неверный email или пароль. Попробуйте снова."
-      );
+
+      // Получаем текст ошибки от бэкенда (из валидации Spring Boot)
+      const serverMessage = err.response?.data?.message || "";
+
+      // Проверяем английские сообщения и переводим их на русский
+      if (serverMessage.includes("Email is required")) {
+        setError("Пожалуйста, введите Email.");
+      } else if (serverMessage.includes("Email should be valid")) {
+        setError("Некорректный формат Email (например: user@example.com).");
+      } else if (serverMessage.includes("Password is required")) {
+        setError("Пожалуйста, введите пароль.");
+      } else if (serverMessage.includes("User not found") || err.response?.status === 404) {
+        setError("Пользователь с таким Email не найден.");
+      } else if (err.response?.status === 401 || err.response?.status === 400) {
+        setError("Неверный email или пароль. Попробуйте снова.");
+      } else {
+        setError("Произошла ошибка при входе. Попробуйте позже.");
+      }
+
     } finally {
       setLoading(false);
     }
@@ -51,9 +59,7 @@ export default function LoginPage() {
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleLogin}>
-        <h2>Войти в CritiqueHub</h2>
-
-        {error && <div className="auth-error-message">{error}</div>}
+        <h2 className="auth-title">Войти в CritiqueHub</h2>
 
         <div className="form-group">
           <label>Email</label>
@@ -78,6 +84,8 @@ export default function LoginPage() {
             disabled={loading}
           />
         </div>
+
+        {error && <div className="auth-error-message">{error}</div>}
 
         <button type="submit" className="auth-submit-btn" disabled={loading}>
           {loading ? "Вход..." : "Войти"}

@@ -1,34 +1,78 @@
-.auth-page {
+/* Контейнер на всю страницу */
+.auth-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: #1c1c1c;
+  justify-content: center; /* Центрирует форму по горизонтали */
+  align-items: center;     /* Центрирует форму по вертикали */
+  min-height: calc(100vh - 80px); /* Занимает всю высоту экрана минус примерная высота Хедера */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px;
 }
 
+/* Сама форма (чтобы она не растягивалась на весь экран) */
 .auth-form {
-  background: #292828;
+  background: #292828; /* Твой темный фон (замени на свой цвет, если нужно) */
   padding: 40px;
-  border-radius: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px; /* Ограничивает ширину формы, чтобы она выглядела аккуратно */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Легкая тень для объема */
+}
+
+/* Элементы внутри формы */
+.form-group {
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  width: 350px;
 }
 
-.auth-form input {
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #333;
-  background: #1c1c1c;
+.form-group label {
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.form-group input {
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff; /* Твой цвет кнопки */
   color: white;
-}
-
-.auth-form button {
-  padding: 15px;
-  border-radius: 10px;
   border: none;
-  background: white;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.auth-submit-btn:disabled {
+  background-color: #444;
+  cursor: not-allowed;
+}
+
+.auth-error-message {
+  color: #ff4d4d;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Центрируем заголовок */
+.auth-title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #fff;
+}
+
+/* Стили для ошибки под паролем */
+.auth-error-message {
+  color: #ff4d4d;
+  font-size: 14px;
+  margin-top: -5px;     /* Слегка подтягиваем к полю пароля */
+  margin-bottom: 20px;  /* Делаем отступ до кнопки */
+  text-align: left;     /* Выравниваем по левому краю, как и инпуты */
 }

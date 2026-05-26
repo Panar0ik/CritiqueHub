@@ -1,0 +1,239 @@
+/* Основной контейнер страницы чата */
+.space-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 90px); /* Высота за вычетом верхнего Header */
+  width: 100vw;
+  max-width: 100%;
+  margin: 0;
+  background-color: #141414;
+  color: #fff;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Верхняя плашка с названием чата */
+.space-header {
+  padding: 15px 20px;
+  background-color: #292828;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+}
+.space-header h2 { margin: 0; font-size: 20px; color: #fff; }
+.space-header p { margin: 4px 0 0 0; color: #aaa; font-size: 13px; }
+
+/* Горизонтальное тело (разделяет лево и право) */
+.space-main-body {
+  display: flex;
+  flex: 1; /* Занимает всю высоту под шапкой */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ЛЕВАЯ КОЛОНКА: Сайдбар с избранным */
+.sidebar {
+  width: 260px; /* Фиксированная ширина левой колонки */
+  background-color: #1a1a1a;
+  padding: 20px;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Не сжимается */
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-title {
+  margin: 0;
+  color: #007bff; /* Красивый акцентный цвет для заголовка */
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.favorites-content {
+  margin-top: 15px;
+  flex: 1;
+  overflow-y: auto;
+}
+.favorites-empty-text {
+  color: #666;
+  font-size: 14px;
+}
+.login-link {
+  color: #007bff;
+  text-decoration: none;
+}
+.login-link:hover { text-decoration: underline; }
+
+/* Список любимых пространств */
+.tags-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fav-item-sidebar {
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.fav-item-sidebar a {
+  display: block;
+  padding: 10px 12px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Три точки, если название слишком длинное */
+}
+.fav-item-sidebar:hover {
+  background-color: #292828;
+}
+.fav-item-sidebar:hover a { color: #fff; }
+
+/* Подсветка текущего открытого пространства в списке */
+.active-fav {
+  background-color: #292828;
+  border-left: 3px solid #007bff;
+}
+.active-fav a { color: #007bff !important; font-weight: bold; }
+
+/* Вертикальный разделитель */
+.vertical-line {
+  width: 1px;
+  background-color: #333;
+  height: 100%;
+}
+
+/* ПРАВАЯ ЧАСТЬ: Контейнер для чата */
+.chat-area {
+  flex: 1; /* Растягивается на всю оставшуюся ширину экрана */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Область вывода сообщений */
+.messages-box {
+  flex: 1;
+  overflow-y: scroll !important;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-sizing: border-box;
+  scroll-behavior: auto !important;
+  background-color: #141414;
+}
+
+/* Пузыри сообщений */
+.message-item {
+  align-self: flex-start;
+  background-color: #292828;
+  padding: 10px 15px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-break: break-word;
+  flex-shrink: 0;
+}
+.message-item.my-message {
+  align-self: flex-end;
+  background-color: #007bff;
+}
+.message-sender { font-size: 12px; font-weight: bold; color: #aaa; margin-bottom: 4px; }
+.message-content { font-size: 15px; color: #fff; }
+.message-time { font-size: 10px; color: #888; text-align: right; margin-top: 5px; }
+
+/* Подвал чата с инпутом (Прижат ровно к низу правой колонки) */
+.space-footer {
+  padding: 15px 25px;
+  background-color: #292828;
+  border-top: 1px solid #333;
+  flex-shrink: 0;
+}
+.message-form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  width: 100%;
+}
+.message-form input {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #1e1e1e;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+}
+.message-form button {
+  padding: 14px 30px;
+  border-radius: 8px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+.message-form button:hover:not(:disabled) { background-color: #0056b3; }
+.message-form button:disabled { background-color: #444; cursor: not-allowed; }
+
+/* Кастомный скроллбар чата */
+.messages-box::-webkit-scrollbar { width: 8px; }
+.messages-box::-webkit-scrollbar-track { background: #141414; }
+.messages-box::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
+.messages-box::-webkit-scrollbar-thumb:hover { background: #555; }
+.no-messages { text-align: center; color: #555; margin: auto; }
+
+/* Новая строка-контейнер для названия и кнопки */
+.space-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Расстояние между текстом заголовка и кнопкой */
+}
+
+/* Базовые стили для кнопки избранного */
+.favorite-toggle-btn {
+  background: #1e1e1e;
+  color: #777; /* Изначально плюсик блеклый */
+  border: 1px solid #444;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Ховер-эффект, когда кнопка еще НЕ в избранном */
+.favorite-toggle-btn:hover {
+  background: #333;
+  color: #fff;
+  border-color: #666;
+  transform: scale(1.05);
+}
+
+/* Стили кнопки, когда комната УЖЕ находится в избранном (горит золотая звезда) */
+.favorite-toggle-btn.is-fav {
+  background: #292828;
+  color: #ffd700; /* Золотой цвет звезды */
+  border-color: #ffd700;
+  font-size: 18px;
+}
+
+/* Ховер-эффект для уже добавленной в избранное кнопки (красный крестик на удаление) */
+.favorite-toggle-btn.is-fav:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  content: "×"; /* При желании можно поменять иконку на ховере */
+}
