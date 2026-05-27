@@ -111,6 +111,14 @@ public class TagService {
                 })
                 .toList();
 
+        final long debugSleepMillis = 10000L;
+        try {
+            Thread.sleep(debugSleepMillis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Фоновый поток ожидания был прерван", e);
+        }
+
         tagRepository.saveAll(tagsToSave);
         tagRepository.flush();
 
