@@ -2,7 +2,6 @@ package com.critiquehub.service;
 
 import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
-import com.critiquehub.mapper.SpaceMapper;
 import com.critiquehub.model.Space;
 import com.critiquehub.model.Tag;
 import com.critiquehub.repository.SpaceRepository;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -25,7 +23,6 @@ public class TagService {
     private final TagRepository tagRepository;
     private final SpaceRepository spaceRepository;
     private final SpaceCacheService spaceCacheService;
-    private final SpaceMapper spaceMapper;
 
     @LogExecutionTime
     @Transactional(readOnly = true)
@@ -89,28 +86,27 @@ public class TagService {
         spaceCacheService.forceRefreshCacheForTag(tagName);
     }
 
-    @ApplyAsync
+    @ApplyAsync("BULK_CREATE_TAGS")
     @LogExecutionTime
     @Transactional
     public String createTagsBulkRaw(final Long spaceId, final List<TagCreateDto> dtos) {
 
-        Space space = spaceRepository.findById(spaceId)
+        final Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
 
-        List<Tag> tagsToSave = dtos.stream()
+        final List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
-                    Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
-                        Tag newTag = new Tag();
+                    final Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
+                        final Tag newTag = new Tag();
                         newTag.setName(dto.name());
                         return newTag;
                     });
 
                     if (tag.getSpaces() == null) {
-                        tag.setSpaces(new HashSet<>());
+                        tag.setSpaces(new java.util.HashSet<>());
                     }
 
                     tag.getSpaces().add(space);
-
                     return tag;
                 })
                 .toList();

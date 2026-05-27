@@ -2,6 +2,7 @@ package com.critiquehub.controller;
 
 import com.critiquehub.dto.TagCreateDto;
 import com.critiquehub.dto.TagDto;
+import com.critiquehub.dto.TaskStatusResponseDto;
 import com.critiquehub.mapper.TagMapper;
 import com.critiquehub.model.Tag;
 import com.critiquehub.service.TagService;
@@ -66,13 +67,15 @@ public class TagController {
 
     @PostMapping("/bulk/{spaceId}")
     @Operation(summary = "Bulk create tags for space")
-    public ResponseEntity<String> createTagsBulk(
+    public ResponseEntity<TaskStatusResponseDto> createTagsBulk(
             final @PathVariable Long spaceId,
             final @RequestBody List<TagCreateDto> dtos
     ) {
-        String operationId = tagService.createTagsBulkRaw(spaceId, dtos);
+        final String opId = tagService.createTagsBulkRaw(spaceId, dtos);
 
-        return ResponseEntity.accepted().body(operationId);
+        final TaskStatusResponseDto response = new TaskStatusResponseDto(opId, "PENDING");
+
+        return ResponseEntity.accepted().body(response);
     }
 
     @DeleteMapping("/{id}")
