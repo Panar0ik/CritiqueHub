@@ -8,6 +8,7 @@ import com.critiquehub.model.Tag;
 import com.critiquehub.service.TagService;
 import com.critiquehub.util.async.OperationRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +32,6 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Tags", description = "Tag management APIs")
 public class TagController {
-
-    private static final int MAX_ATTEMPTS = 20;
-    private static final long SLEEP_MILLIS = 500;
 
     private final TagService tagService;
     private final TagMapper tagMapper;
@@ -70,40 +68,30 @@ public class TagController {
     }
 
     @PostMapping("/bulk/{spaceId}")
-    @Operation(summary = "Bulk create tags for space and wait for completion")
+    @Operation(summary = "Bulk create tags for space")
     public ResponseEntity<TaskStatusResponseDto> createTagsBulk(
             final @PathVariable Long spaceId,
             final @RequestBody List<TagCreateDto> dtos
     ) {
         final String opId = tagService.createTagsBulkRaw(spaceId, dtos);
 
-        com.critiquehub.util.async.Operation operation;
-
-        for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            operation = operationRepository.findById(opId)
-                    .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Operation not found: " + opId));
-
-            entityManager.detach(operation);
-
-            final String currentState = operation.getState();
-
-            if ("COMPLETED".equals(currentState) || "FAILED".equals(currentState)) {
-                break;
-            }
-
-            try {
-                Thread.sleep(SLEEP_MILLIS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException("Thread interrupted while waiting for operation", e);
-            }
-        }
-
-        operation = operationRepository.findById(opId)
+        final com.critiquehub.util.async.Operation operation = operationRepository.findById(opId)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Operation not found: " + opId));
 
         final TaskStatusResponseDto response = new TaskStatusResponseDto(operation.getId(), operation.getState());
 
+        return ResponseEntity.accepted().body(response);
+    }
+
+    @GetMapping("/tasks/{opId}")
+    @Operation(summary = "Get async operation status by ID")
+    public ResponseEntity<TaskStatusResponseDto> getOperationStatus(final @PathVariable String opId) {
+        final com.critiquehub.util.async.Operation operation = operationRepository.findById(opId)
+                .orElseThrow(() -> new EntityNotFoundException("Operation not found with id: " + opId));
+
+        entityManager.detach(operation);
+
+        final TaskStatusResponseDto response = new TaskStatusResponseDto(operation.getId(), operation.getState());
         return ResponseEntity.ok(response);
     }
 
