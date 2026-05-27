@@ -21,31 +21,31 @@ public class RaceConditionDemo implements CommandLineRunner {
 
     @Override
     public void run(final String... args) throws Exception {
-        int threadsCount = DEFAULT_COUNT;
-        int iterationsPerThread = DEFAULT_THREAD;
-        int expectedTotal = threadsCount * iterationsPerThread;
-
-        ExecutorService executorService = Executors.newFixedThreadPool(threadsCount);
-        CountDownLatch latch = new CountDownLatch(threadsCount);
+        final int threadsCount = DEFAULT_COUNT;
+        final int iterationsPerThread = DEFAULT_THREAD;
+        final int expectedTotal = threadsCount * iterationsPerThread;
 
         log.info("[Race Demo] Запуск теста конкурентности на {} потоках...", threadsCount);
 
-        for (int i = 0; i < threadsCount; i++) {
-            executorService.submit(() -> {
-                try {
-                    for (int j = 0; j < iterationsPerThread; j++) {
-                        unsafeCounter++;
+        final CountDownLatch latch = new CountDownLatch(threadsCount);
 
-                        safeCounter.incrementAndGet();
+        try (ExecutorService executorService = Executors.newFixedThreadPool(threadsCount)) {
+
+            for (int i = 0; i < threadsCount; i++) {
+                executorService.submit(() -> {
+                    try {
+                        for (int j = 0; j < iterationsPerThread; j++) {
+                            unsafeCounter++;
+                            safeCounter.incrementAndGet();
+                        }
+                    } finally {
+                        latch.countDown();
                     }
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+                });
+            }
 
-        latch.await();
-        executorService.shutdown();
+            latch.await();
+        }
 
         log.info("--- РЕЗУЛЬТАТЫ ТЕСТА КОНКУРЕНТНОСТИ ---");
         log.info("Ожидаемое значение счетчиков: {}", expectedTotal);
@@ -55,7 +55,8 @@ public class RaceConditionDemo implements CommandLineRunner {
         if (unsafeCounter < expectedTotal) {
             log.warn(
                     "[RACE CONDITION ПОДТВЕРЖДЕН] Из-за коллизий потоков потеряно {} операций!",
-                    (expectedTotal - unsafeCounter));
+                    expectedTotal - unsafeCounter
+            );
         }
     }
 }
