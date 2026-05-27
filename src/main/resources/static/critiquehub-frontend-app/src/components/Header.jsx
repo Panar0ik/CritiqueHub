@@ -171,7 +171,7 @@ export default function Header() {
       <div className="auth-buttons">
         {user ? (
           <>
-            <Link to="/profile" className="login-btn" style={{ textDecoration: 'none' }}> Личный кабинет </Link>
+            <Link to="/profile" className="login-btn" style={{ textDecoration: 'none' }}> {user.username || "Пользователь"} </Link>
             <button onClick={handleLogoutClick} className="logout-btn"> Выйти </button>
           </>
         ) : (

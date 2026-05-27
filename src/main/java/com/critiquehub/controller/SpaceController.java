@@ -57,12 +57,21 @@ public class SpaceController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Search spaces by tag")
+    @Operation(summary = "Search spaces by tag or name")
     public ResponseEntity<Page<SpaceResponseDto>> search(
-            final @RequestParam String tag,
+            final @RequestParam(required = false) String tag,
+            final @RequestParam(required = false) String name,
             final @Parameter(hidden = true) @PageableDefault(size = DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
-        return ResponseEntity.ok(spaceService.getSpacesByTag(tag, pageable));
+        if (name != null && !name.isBlank()) {
+            return ResponseEntity.ok(spaceService.searchSpacesByName(name, pageable));
+        }
+
+        if (tag != null && !tag.isBlank()) {
+            return ResponseEntity.ok(spaceService.getSpacesByTag(tag, pageable));
+        }
+
+        return ResponseEntity.ok(Page.empty(pageable));
     }
 
     @PutMapping("/{id}")
@@ -76,5 +85,12 @@ public class SpaceController {
     @Operation(summary = "Delete space")
     public void delete(final @PathVariable Long id) {
         spaceService.deleteSpace(id);
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    @Operation(summary = "Get spaces by owner ID")
+    public ResponseEntity<List<SpaceResponseDto>> getByOwner(final @PathVariable Long ownerId) {
+        List<SpaceResponseDto> spaces = spaceService.getSpacesByOwner(ownerId);
+        return ResponseEntity.ok(spaces);
     }
 }

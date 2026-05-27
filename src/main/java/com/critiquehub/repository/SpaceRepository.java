@@ -44,4 +44,7 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
 
     @EntityGraph(attributePaths = {"owner", "tags"})
     Optional<Space> findByName(String name);
+
+    @EntityGraph(attributePaths = {"owner", "tags"})
+    Page<Space> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

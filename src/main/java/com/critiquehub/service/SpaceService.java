@@ -154,4 +154,25 @@ public class SpaceService {
                 })
                 .collect(Collectors.toSet());
     }
+
+    @LogExecutionTime
+    @Transactional(readOnly = true)
+    public Page<SpaceResponseDto> searchSpacesByName(final String name, final Pageable pageable) {
+        if (name == null || name.isBlank()) {
+            return Page.empty(pageable);
+        }
+        return spaceRepository.findByNameContainingIgnoreCase(name, pageable)
+                .map(spaceMapper::toDto);
+    }
+
+    @LogExecutionTime
+    @Transactional(readOnly = true)
+    public List<SpaceResponseDto> getSpacesByOwner(final Long ownerId) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + ownerId));
+
+        return spaceRepository.findByOwner(owner).stream()
+                .map(spaceMapper::toDto)
+                .toList();
+    }
 }

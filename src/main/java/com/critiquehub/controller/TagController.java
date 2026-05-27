@@ -65,21 +65,13 @@ public class TagController {
     }
 
     @PostMapping("/bulk/{spaceId}")
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Bulk create tags for space")
     public ResponseEntity<String> createTagsBulk(
             final @PathVariable Long spaceId,
             final @RequestBody List<TagCreateDto> dtos
     ) {
-        // 1. Быстро регистрируем задачу в БД и получаем UUID
-        String operationId = operationService.register("Массовое создание тегов");
+        String operationId = tagService.createTagsBulkRaw(spaceId, dtos);
 
-        // 2. Явно отдаем задачу в асинхронный поток через пул
-        operationService.runTask(operationId, () -> {
-            tagService.createTagsBulkRaw(spaceId, dtos);
-        });
-
-        // 3. Мгновенно возвращаем 202 Accepted и UUID
         return ResponseEntity.accepted().body(operationId);
     }
 

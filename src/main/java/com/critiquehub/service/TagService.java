@@ -8,6 +8,7 @@ import com.critiquehub.model.Tag;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.util.aspect.LogExecutionTime;
+import com.critiquehub.util.async.ApplyAsync;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -88,9 +89,14 @@ public class TagService {
         spaceCacheService.forceRefreshCacheForTag(tagName);
     }
 
+    @ApplyAsync
     @LogExecutionTime
     @Transactional
-    public void createTagsBulkRaw(final Long spaceId, final List<TagCreateDto> dtos) {
+    public String createTagsBulkRaw(final Long spaceId, final List<TagCreateDto> dtos) {
+
+        Space space = spaceRepository.findById(spaceId)
+                .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
+
         List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
                     Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
@@ -98,23 +104,20 @@ public class TagService {
                         newTag.setName(dto.name());
                         return newTag;
                     });
+
                     if (tag.getSpaces() == null) {
                         tag.setSpaces(new HashSet<>());
                     }
+
+                    tag.getSpaces().add(space);
+
                     return tag;
                 })
                 .toList();
 
-        List<Tag> savedTags = tagRepository.saveAll(tagsToSave);
+        tagRepository.saveAll(tagsToSave);
         tagRepository.flush();
 
-        Space space = spaceRepository.findById(spaceId)
-                .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
-
-        for (Tag tag : savedTags) {
-            tag.getSpaces().add(space);
-            space.getTags().add(tag);
-        }
-        spaceRepository.save(space);
+        return null;
     }
 }
