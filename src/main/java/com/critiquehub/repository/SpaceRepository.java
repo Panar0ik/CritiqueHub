@@ -28,6 +28,11 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
     @EntityGraph(attributePaths = {"owner", "tags"})
     List<Space> findByTags(Tag tag);
 
+    @Override
+    @NonNull
+    @EntityGraph(attributePaths = {"owner", "tags"})
+    Optional<Space> findById(@NonNull Long id);
+
     @EntityGraph(attributePaths = {"owner", "tags"})
     @Query("SELECT DISTINCT s FROM Space s JOIN s.tags t WHERE t.name = :tagName")
     Page<Space> findByTagNameJPQL(@Param("tagName") String tagName, Pageable pageable);

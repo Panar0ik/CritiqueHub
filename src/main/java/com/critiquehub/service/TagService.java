@@ -106,6 +106,7 @@ public class TagService {
                     final Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
                         final Tag newTag = new Tag();
                         newTag.setName(dto.name());
+                        newTag.setSpaces(new java.util.HashSet<>());
                         return newTag;
                     });
 
@@ -113,7 +114,12 @@ public class TagService {
                         tag.setSpaces(new java.util.HashSet<>());
                     }
 
+                    if (space.getTags() == null) {
+                        space.setTags(new java.util.HashSet<>());
+                    }
+
                     tag.getSpaces().add(space);
+                    space.getTags().add(tag);
 
                     final int currentCount = metricsCounter.incrementAtomic();
                     log.debug("[Metrics] Processed tag: {}. Global metrics counter: {}", dto.name(), currentCount);
@@ -130,8 +136,14 @@ public class TagService {
             throw new IllegalStateException("The background waiting thread was interrupted", e);
         }
 
-        tagRepository.saveAll(tagsToSave);
-        tagRepository.flush();
+        try {
+            tagRepository.saveAll(tagsToSave);
+            spaceRepository.save(space);
+
+            log.info("[Bulk Task] Successfully saved {} tags and linked to space {}", tagsToSave.size(), spaceId);
+        } catch (Exception e) {
+            log.error("[Bulk Task] FATAL ERROR during DB save: ", e);
+        }
 
         return null;
     }
