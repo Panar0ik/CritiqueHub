@@ -10,10 +10,8 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Стейты для логаута
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Стейты для динамического поиска
   const queryParams = new URLSearchParams(location.search);
   const [searchQuery, setSearchQuery] = useState(queryParams.get("search") || "");
   const [searchResults, setSearchResults] = useState([]);
@@ -21,13 +19,11 @@ export default function Header() {
 
   const dropdownRef = useRef(null);
 
-  // Синхронизация инпута при изменении URL извне
   useEffect(() => {
     const q = new URLSearchParams(location.search).get("search") || "";
     setSearchQuery(q);
   }, [location.search]);
 
-  // Закрытие дропдауна при клике вне поиска
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -38,7 +34,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Дебаунс (задержка) для запросов к API
   useEffect(() => {
     const trimmed = searchQuery.trim();
 
@@ -53,7 +48,6 @@ export default function Header() {
       let urlParams = "";
 
       if (trimmed.startsWith("#")) {
-        // Если начинается с #, убираем решетку и ищем по тегу
         const cleanTag = trimmed.slice(1).trim();
         if (!cleanTag) {
           setSearchResults([]);
@@ -62,14 +56,12 @@ export default function Header() {
         }
         urlParams = `tag=${encodeURIComponent(cleanTag)}`;
       } else {
-        // Иначе ищем по названию
         urlParams = `name=${encodeURIComponent(trimmed)}`;
       }
 
       apiClient
         .get(`/spaces/search?${urlParams}`)
         .then((res) => {
-          // Наш бэк возвращает Page, поэтому смотрим в .content
           const results = res.data.content || res.data || [];
           setSearchResults(results);
           setShowDropdown(results.length > 0);
@@ -100,7 +92,7 @@ export default function Header() {
 
   const handleResultClick = (spaceId) => {
     setShowDropdown(false);
-    setSearchQuery(""); // Очищаем поиск при переходе
+    setSearchQuery("");
     navigate(`/spaces/${spaceId}`);
   };
 
@@ -142,7 +134,6 @@ export default function Header() {
           onFocus={handleInputFocus}
         />
 
-        {/* ВЫПАДАЮЩЕЕ МЕНЮ С РЕЗУЛЬТАТАМИ */}
         {showDropdown && searchResults.length > 0 && (
           <div className="search-dropdown">
             {searchResults.map((space) => (
