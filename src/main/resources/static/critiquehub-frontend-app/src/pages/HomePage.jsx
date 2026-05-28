@@ -136,7 +136,7 @@ export default function HomePage() {
                 onClick={() => setSelectedTag(tag.name)}
                 style={{
                   cursor: "pointer",
-                  padding: "6px 0",
+                  padding: "10px 15px",
                   color: isSelected ? "#007bff" : "#aaa",
                   fontWeight: isSelected ? "bold" : "normal",
                   transition: "color 0.2s ease"
