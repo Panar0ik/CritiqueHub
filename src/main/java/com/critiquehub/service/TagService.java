@@ -128,7 +128,7 @@ public class TagService {
                 })
                 .toList();
 
-        final long debugSleepMillis = 10000L;
+        final long debugSleepMillis = 5000L;
         try {
             Thread.sleep(debugSleepMillis);
         } catch (InterruptedException e) {
