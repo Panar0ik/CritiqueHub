@@ -10,13 +10,11 @@ export default function HomePage() {
   const [spaces, setSpaces] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
-  // Стейт для хранения выбранного тега
   const [selectedTag, setSelectedTag] = useState(null);
 
   const { user } = useAuth();
   const userId = user?.id || user?.userId;
 
-  // 1. Загрузка боковых панелей (Теги и Избранное)
   useEffect(() => {
     apiClient.get("/tags").then(res => setTags(res.data.slice(0, 10)));
 
@@ -56,7 +54,6 @@ export default function HomePage() {
   return (
     <div className="body-container">
 
-      {/* ЛЕВАЯ КОЛОНКА */}
       <aside className="sidebar">
         <h3 className="sidebar-title">ИЗБРАННОЕ</h3>
         <div className="favorites-content">
@@ -68,7 +65,6 @@ export default function HomePage() {
               <ul className="tags-list">
                 {favorites.map(fav => (
                   <li key={fav.id} className="fav-item-sidebar">
-                    {/* ИСПРАВЛЕНО: Ссылка ведет на страницу пространства во фронтенде */}
                     <Link to={`/spaces/${fav.id}`}>★ {fav.name}</Link>
                   </li>
                 ))}
@@ -80,7 +76,6 @@ export default function HomePage() {
       </aside>
       <div className="vertical-line" />
 
-      {/* ЦЕНТРАЛЬНАЯ КОЛОНКА */}
       <main className="content">
         <div className="main-content-wrapper">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
@@ -88,7 +83,6 @@ export default function HomePage() {
               {selectedTag ? `Пространства с тегом #${selectedTag}` : "Пространства"}
             </h2>
 
-            {/* Кнопка сброса фильтра */}
             {selectedTag && (
               <button
                 onClick={() => setSelectedTag(null)}
@@ -131,7 +125,6 @@ export default function HomePage() {
 
       <div className="vertical-line" />
 
-      {/* ПРАВАЯ КОЛОНКА (Интерактивные теги) */}
       <aside className="sidebar-right">
         <h3 className="sidebar-title">ТЕГИ:</h3>
         <ul className="tags-list">

@@ -8,9 +8,11 @@ import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.TagRepository;
 import com.critiquehub.util.aspect.LogExecutionTime;
 import com.critiquehub.util.async.ApplyAsync;
+import com.critiquehub.util.async.MetricsCounter;
 import com.critiquehub.util.cache.SpaceCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TagService {
 
     private final TagRepository tagRepository;
     private final SpaceRepository spaceRepository;
     private final SpaceCacheService spaceCacheService;
+    private final MetricsCounter metricsCounter;
 
     @LogExecutionTime
     @Transactional(readOnly = true)
@@ -94,6 +98,9 @@ public class TagService {
         final Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(() -> new EntityNotFoundException("Space not found with id: " + spaceId));
 
+        log.info("[Bulk Task] Starting tag mapping. Current metrics global count: {}",
+                metricsCounter.getAtomicValue());
+
         final List<Tag> tagsToSave = dtos.stream()
                 .map(dto -> {
                     final Tag tag = tagRepository.findByName(dto.name()).orElseGet(() -> {
@@ -107,6 +114,10 @@ public class TagService {
                     }
 
                     tag.getSpaces().add(space);
+
+                    final int currentCount = metricsCounter.incrementAtomic();
+                    log.debug("[Metrics] Processed tag: {}. Global metrics counter: {}", dto.name(), currentCount);
+
                     return tag;
                 })
                 .toList();

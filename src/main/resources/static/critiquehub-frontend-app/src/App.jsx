@@ -23,7 +23,6 @@ export default function App() {
             <Route path="/spaces/:spaceId" element={<SpacePage />} />
           </Routes>
 
-          {/* Можно добавить футер или дополнительные элементы здесь */}
         </div>
       </Router>
     </AuthProvider>

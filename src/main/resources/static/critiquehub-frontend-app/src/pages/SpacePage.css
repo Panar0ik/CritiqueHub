@@ -1,8 +1,11 @@
-/* Основной контейнер страницы чата */
+/* ==========================================================================
+   1. ОСНОВНЫЕ КОНТЕЙНЕРЫ СТРАНИЦЫ И СТРУКТУРА
+   ========================================================================== */
+
 .space-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 90px); /* Высота за вычетом верхнего Header */
+  height: calc(100vh - 90px);
   width: 100vw;
   max-width: 100%;
   margin: 0;
@@ -12,194 +15,51 @@
   overflow: hidden;
 }
 
-/* Верхняя плашка с названием чата */
-.space-header {
-  padding: 15px 20px;
-  background-color: #292828;
-  border-bottom: 1px solid #333;
-  flex-shrink: 0;
-}
-.space-header h2 { margin: 0; font-size: 20px; color: #fff; }
-.space-header p { margin: 4px 0 0 0; color: #aaa; font-size: 13px; }
-
-/* Горизонтальное тело (разделяет лево и право) */
 .space-main-body {
   display: flex;
-  flex: 1; /* Занимает всю высоту под шапкой */
+  flex: 1;
   width: 100%;
   overflow: hidden;
 }
 
-/* ЛЕВАЯ КОЛОНКА: Сайдбар с избранным */
-.sidebar {
-  width: 260px; /* Фиксированная ширина левой колонки */
-  background-color: #1a1a1a;
-  padding: 20px;
-  box-sizing: border-box;
-  flex-shrink: 0; /* Не сжимается */
-  display: flex;
-  flex-direction: column;
-}
-.sidebar-title {
-  margin: 0;
-  color: #007bff; /* Красивый акцентный цвет для заголовка */
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-.favorites-content {
-  margin-top: 15px;
-  flex: 1;
-  overflow-y: auto;
-}
-.favorites-empty-text {
-  color: #666;
-  font-size: 14px;
-}
-.login-link {
-  color: #007bff;
-  text-decoration: none;
-}
-.login-link:hover { text-decoration: underline; }
-
-/* Список любимых пространств */
-.tags-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.fav-item-sidebar {
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-.fav-item-sidebar a {
-  display: block;
-  padding: 10px 12px;
-  color: #ccc;
-  text-decoration: none;
-  font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; /* Три точки, если название слишком длинное */
-}
-.fav-item-sidebar:hover {
-  background-color: #292828;
-}
-.fav-item-sidebar:hover a { color: #fff; }
-
-/* Подсветка текущего открытого пространства в списке */
-.active-fav {
-  background-color: #292828;
-  border-left: 3px solid #007bff;
-}
-.active-fav a { color: #007bff !important; font-weight: bold; }
-
-/* Вертикальный разделитель */
 .vertical-line {
   width: 1px;
   background-color: #333;
   height: 100%;
 }
 
-/* ПРАВАЯ ЧАСТЬ: Контейнер для чата */
-.chat-area {
-  flex: 1; /* Растягивается на всю оставшуюся ширину экрана */
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
+/* ==========================================================================
+   2. ВЕРХНЯЯ ШАПКА ЧАТА (SPACE HEADER)
+   ========================================================================== */
 
-/* Область вывода сообщений */
-.messages-box {
-  flex: 1;
-  overflow-y: scroll !important;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-sizing: border-box;
-  scroll-behavior: auto !important;
-  background-color: #141414;
-}
-
-/* Пузыри сообщений */
-.message-item {
-  align-self: flex-start;
+.space-header {
+  padding: 15px 20px;
   background-color: #292828;
-  padding: 10px 15px;
-  border-radius: 12px;
-  max-width: 80%;
-  word-break: break-word;
+  border-bottom: 1px solid #333;
   flex-shrink: 0;
 }
-.message-item.my-message {
-  align-self: flex-end;
-  background-color: #007bff;
-}
-.message-sender { font-size: 12px; font-weight: bold; color: #aaa; margin-bottom: 4px; }
-.message-content { font-size: 15px; color: #fff; }
-.message-time { font-size: 10px; color: #888; text-align: right; margin-top: 5px; }
 
-/* Подвал чата с инпутом (Прижат ровно к низу правой колонки) */
-.space-footer {
-  padding: 15px 25px;
-  background-color: #292828;
-  border-top: 1px solid #333;
-  flex-shrink: 0;
-}
-.message-form {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  width: 100%;
-}
-.message-form input {
-  flex: 1;
-  padding: 14px 20px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  background-color: #1e1e1e;
-  color: #fff;
-  font-size: 16px;
-  outline: none;
-  box-sizing: border-box;
-}
-.message-form button {
-  padding: 14px 30px;
-  border-radius: 8px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: background 0.2s;
-}
-.message-form button:hover:not(:disabled) { background-color: #0056b3; }
-.message-form button:disabled { background-color: #444; cursor: not-allowed; }
-
-/* Кастомный скроллбар чата */
-.messages-box::-webkit-scrollbar { width: 8px; }
-.messages-box::-webkit-scrollbar-track { background: #141414; }
-.messages-box::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
-.messages-box::-webkit-scrollbar-thumb:hover { background: #555; }
-.no-messages { text-align: center; color: #555; margin: auto; }
-
-/* Новая строка-контейнер для названия и кнопки */
 .space-title-row {
   display: flex;
   align-items: center;
-  gap: 12px; /* Расстояние между текстом заголовка и кнопкой */
+  gap: 12px;
 }
 
-/* Базовые стили для кнопки избранного */
+.space-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #fff;
+}
+
+.space-header p {
+  margin: 4px 0 0 0;
+  color: #aaa;
+  font-size: 13px;
+}
+
 .favorite-toggle-btn {
   background: #1e1e1e;
-  color: #777; /* Изначально плюсик блеклый */
+  color: #777;
   border: 1px solid #444;
   border-radius: 6px;
   width: 32px;
@@ -214,7 +74,6 @@
   user-select: none;
 }
 
-/* Ховер-эффект, когда кнопка еще НЕ в избранном */
 .favorite-toggle-btn:hover {
   background: #333;
   color: #fff;
@@ -222,18 +81,471 @@
   transform: scale(1.05);
 }
 
-/* Стили кнопки, когда комната УЖЕ находится в избранном (горит золотая звезда) */
 .favorite-toggle-btn.is-fav {
   background: #292828;
-  color: #ffd700; /* Золотой цвет звезды */
+  color: #ffd700;
   border-color: #ffd700;
   font-size: 18px;
 }
 
-/* Ховер-эффект для уже добавленной в избранное кнопки (красный крестик на удаление) */
 .favorite-toggle-btn.is-fav:hover {
   background: #dc3545;
   color: white;
   border-color: #dc3545;
-  content: "×"; /* При желании можно поменять иконку на ховере */
+}
+
+/* ==========================================================================
+   3. ЛЕВАЯ КОЛОНКА (САЙДБАР С ИЗБРАННЫМ)
+   ========================================================================== */
+
+.sidebar {
+  width: 260px;
+  background-color: #1a1a1a;
+  padding: 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  margin: 0;
+  color: #007bff;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.favorites-content {
+  margin-top: 15px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.favorites-empty-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.login-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+.tags-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fav-item-sidebar {
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.fav-item-sidebar a {
+  display: block;
+  padding: 10px 12px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-item-sidebar:hover {
+  background-color: #292828;
+}
+
+.fav-item-sidebar:hover a {
+  color: #fff;
+}
+
+.active-fav {
+  background-color: #292828;
+  border-left: 3px solid #007bff;
+}
+
+.active-fav a {
+  color: #007bff !important;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   4. ЛЕНТА СООБЩЕНИЙ (CHAT AREA & MESSAGES BOX)
+   ========================================================================== */
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.messages-box {
+  flex: 1;
+  overflow-y: auto !important;
+  overflow-x: hidden;          /* Защита от горизонтальной полосы прокрутки */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-sizing: border-box;
+  scroll-behavior: auto !important;
+  background-color: #141414;
+}
+
+.no-messages {
+  text-align: center;
+  color: #555;
+  margin: auto;
+}
+
+/* ==========================================================================
+   5. КОМПОНЕНТ СООБЩЕНИЯ (MESSAGE ITEM)
+   ========================================================================== */
+
+.message-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background-color: #1e1e1e;
+  max-width: 80%;
+  word-break: break-word;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-width: 0;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.message-item.my-message {
+  align-self: flex-end;
+  background-color: #007bff;
+}
+
+.message-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-sender {
+  font-size: 12px;
+  font-weight: bold;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.message-content {
+  font-size: 15px;
+  color: #fff;
+}
+
+.message-time {
+  font-size: 10px;
+  color: #888;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.message-attachments {
+  margin-top: 8px;
+}
+
+.attached-img {
+  max-width: 100%;
+  max-height: 350px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #333;
+  margin-top: 8px;
+  display: block;
+}
+
+.attached-link {
+  color: #28a745;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+/* ==========================================================================
+   6. СТИЛИ ДЛЯ СООБЩЕНИЙ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ (НА ГОЛУБОМ ФОНЕ)
+   ========================================================================== */
+
+.my-message .message-sender {
+  color: #ffffff;
+  opacity: 0.95;
+}
+
+.my-message .message-time {
+  color: #ffffff;
+  opacity: 0.7;
+}
+
+.my-message .three-dots-btn {
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+.my-message .three-dots-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  opacity: 1;
+}
+
+.my-message .message-dropdown-menu {
+  background: #2a2a2a;
+  border: 1px solid #555;
+}
+
+/* ==========================================================================
+   7. КОНТЕКСТНОЕ МЕНЮ СООБЩЕНИЯ (ТРИ ТОЧКИ)
+   ========================================================================== */
+
+.message-menu-wrapper {
+  position: relative;
+  margin-left: 10px;
+}
+
+.three-dots-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 5px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.three-dots-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+.message-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  overflow: hidden;
+}
+
+.message-dropdown-menu button {
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.message-dropdown-menu button:hover {
+  background: #3a3a3a;
+  color: #007bff;
+}
+
+.message-dropdown-menu button.delete-menu-item {
+  color: #ff4d4d;
+}
+
+.message-dropdown-menu button.delete-menu-item:hover {
+  background: rgba(255, 77, 77, 0.1);
+}
+
+/* ==========================================================================
+   8. НИЖНЯЯ ПАНЕЛЬ ОТПРАВКИ И СТРОКА ВВОДА (SPACE FOOTER)
+   ========================================================================== */
+
+.space-footer {
+  padding: 15px 20px;
+  background-color: #121212;
+  border-top: 1px solid #333;
+  flex-shrink: 0;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.message-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.input-row-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #222;
+  padding: 6px 14px;
+  border-radius: 24px;
+  border: 1px solid #333;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.message-main-input {
+  flex: 1;
+  width: 100%;
+  background: none !important;
+  border: none !important;
+  color: white;
+  padding: 8px 0;
+  font-size: 15px;
+  outline: none;
+}
+
+.attach-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #aaa;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.attach-toggle-btn:hover {
+  color: #007bff;
+  background: #333;
+}
+
+.attach-toggle-btn.has-attachment {
+  color: #28a745;
+  text-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+}
+
+.send-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.send-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.send-btn:disabled {
+  background-color: #444;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.input-mode-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a1a1a;
+  padding: 6px 12px;
+  border-left: 3px solid #007bff;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.input-mode-panel.edit-mode {
+  border-left-color: #28a745;
+}
+
+.input-mode-panel button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.input-mode-panel button:hover {
+  color: #fff;
+}
+
+.attachment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(40, 167, 69, 0.15);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  color: #2bba54;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.attachment-badge button {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.auth-reminder {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.auth-reminder a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-reminder a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   9. КАСТОМИЗАЦИЯ СКРОЛЛБАРА MESSAGES BOX
+   ========================================================================== */
+
+.messages-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages-box::-webkit-scrollbar-track {
+  background: #141414;
+}
+
+.messages-box::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 4px;
+}
+
+.messages-box::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
