@@ -127,7 +127,7 @@ public class TagService {
             Thread.sleep(debugSleepMillis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Фоновый поток ожидания был прерван", e);
+            throw new IllegalStateException("The background waiting thread was interrupted", e);
         }
 
         tagRepository.saveAll(tagsToSave);

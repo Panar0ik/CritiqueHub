@@ -8,6 +8,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletionException;
 
 @Aspect
 @Component
@@ -34,7 +35,7 @@ public class AsyncAspect {
                 updateOperationState(opId, "COMPLETED");
             } catch (Throwable e) {
                 updateOperationState(opId, "FAILED");
-                throw new RuntimeException("Async task failed: " + opId, e);
+                throw new CompletionException("Async task failed: " + opId, e);
             }
         });
 

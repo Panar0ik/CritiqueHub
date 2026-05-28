@@ -128,7 +128,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponseDto login(final UserLoginRequest request, final HttpSession session) {
         final User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
 
         if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("Invalid password");
