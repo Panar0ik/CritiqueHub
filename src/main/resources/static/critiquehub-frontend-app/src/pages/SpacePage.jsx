@@ -36,7 +36,6 @@ export default function SpacePage() {
         const res = await apiClient.get(`/messages/space/${spaceId}`);
         const sorted = [...res.data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-        // Параллельно подтягиваем вложения для каждого сообщения
         const messagesWithAttachments = await Promise.all(
           sorted.map(async (msg) => {
             try {
@@ -81,7 +80,6 @@ export default function SpacePage() {
     return () => clearInterval(interval);
   }, [spaceId, userId]);
 
-  // 2. Отправка / Редактирование / Ответ
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
@@ -96,7 +94,6 @@ export default function SpacePage() {
 
     try {
       if (editingMessage) {
-        // Редактирование (Отправляем string в body по вашему API)
         await apiClient.put(`/messages/${editingMessage.id}`, JSON.stringify(textToSend), {
           headers: { "Content-Type": "application/json" }
         });
@@ -106,7 +103,6 @@ export default function SpacePage() {
         ));
         setEditingMessage(null);
       } else {
-        // Создание обычного сообщения или ответа
         const finalText = replyToMessage
           ? `↪ Отвечая на ${replyToMessage.authorName || 'участника'}: "${replyToMessage.text.slice(0, 30)}..."\n${textToSend}`
           : textToSend;
@@ -120,7 +116,6 @@ export default function SpacePage() {
         let createdMessage = response.data;
         createdMessage.attachments = [];
 
-        // Если была прикреплена ссылка, создаем attachment
         if (currentAttachment) {
           try {
             const attachResponse = await apiClient.post("/attachments", {
@@ -144,7 +139,6 @@ export default function SpacePage() {
     }
   };
 
-  // 3. Удаление сообщения через три точки
   const handleDeleteMessage = async (messageId) => {
     if (!window.confirm("Вы уверены, что хотите удалить это сообщение?")) return;
     try {
@@ -155,14 +149,12 @@ export default function SpacePage() {
     }
   };
 
-  // 4. Переход в режим редактирования
   const handleStartEdit = (msg) => {
     setReplyToMessage(null);
     setEditingMessage({ id: msg.id, text: msg.text });
     setNewMessage(msg.text);
   };
 
-  // 5. Переход в режим ответа
   const handleStartReply = (msg) => {
     setEditingMessage(null);
     setReplyToMessage(msg);
@@ -190,8 +182,6 @@ export default function SpacePage() {
   return (
     <div className="space-container">
       <div className="space-main-body">
-
-        {/* Левая колонка — Избранное */}
         <aside className="sidebar">
           <h3 className="sidebar-title">ИЗБРАННОЕ</h3>
           <div className="favorites-content">
@@ -213,7 +203,6 @@ export default function SpacePage() {
 
         <div className="vertical-line" />
 
-        {/* Правая часть — Чат */}
         <div className="chat-area">
           <div className="space-header">
             <div className="space-title-row">
@@ -231,7 +220,6 @@ export default function SpacePage() {
             <p>{spaceInfo?.description || "Описание отсутствует"}</p>
           </div>
 
-          {/* Лента сообщений */}
           <div className="messages-box" ref={messagesBoxRef}>
             {messages.length === 0 ? (
               <div className="no-messages">Здесь пока нет сообщений. Начните общение первым!</div>
@@ -249,12 +237,10 @@ export default function SpacePage() {
             )}
           </div>
 
-          {/* Зона отправки нижняя */}
           <div className="space-footer">
             {user ? (
               <form className="message-form" onSubmit={handleSendMessage}>
 
-                {/* Инфо-панель редактирования */}
                 {editingMessage && (
                   <div className="input-mode-panel edit-mode">
                     <span>Редактирование сообщения</span>
@@ -262,7 +248,6 @@ export default function SpacePage() {
                   </div>
                 )}
 
-                {/* Инфо-панель ответа */}
                 {replyToMessage && (
                   <div className="input-mode-panel reply-mode">
                     <span>Ответ пользователю <strong>{replyToMessage.authorName || "Участник"}</strong></span>
@@ -270,10 +255,8 @@ export default function SpacePage() {
                   </div>
                 )}
 
-                {/* Современная строка ввода */}
                 <div className="input-row-container">
 
-                  {/* Кнопка вложений Скрепка */}
                   {!editingMessage && (
                     <div className="attachment-wrapper">
                       <button
@@ -304,7 +287,6 @@ export default function SpacePage() {
                   </button>
                 </div>
 
-                {/* Бейдж прикрепленного вложения */}
                 {attachmentUrl.trim() && !editingMessage && (
                   <div className="attachment-badge">
                     <span>📎 Файл прикреплен ({attachmentUrl.slice(0, 35)}...)</span>

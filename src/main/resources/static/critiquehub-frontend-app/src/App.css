@@ -246,14 +246,12 @@
   color: #ffd700;
 }
 
-/* Делаем ссылку блочным элементом, чтобы карточка кликалась по всей площади */
 .space-card-link {
   text-decoration: none;
   color: inherit;
   display: block;
 }
 
-/* Стилизуем внутренний контейнер карточки (используем твои свойства из .space-item-main) */
 .space-content {
   background: #292828;
   padding: 25px;
@@ -266,13 +264,11 @@
   cursor: pointer;
 }
 
-/* Эффект при наведении на карточку через ссылку */
 .space-card-link:hover .space-content {
   background: #3d3d3d;
   border-color: #555;
 }
 
-/* Кнопка "Выйти" в обычном состоянии (копирует стиль твоей login-btn) */
 .logout-btn {
   padding: 8px 15px;
   height: 35px;
@@ -290,30 +286,25 @@
   color: white;
 }
 
-/* При наведении кнопка горит красным */
 .logout-btn:hover {
-  background: #dc3545; /* Насыщенный красный */
+  background: #dc3545;
   color: white;
 }
 
-/* --- МОДАЛЬНОЕ ОКНО (ПОДТВЕРЖДЕНИЕ) --- */
-
-/* Задний полупрозрачный фон, блокирующий остальной экран */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7); /* Затемнение */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* Поверх всего */
+  z-index: 9999;
   animation: fadeIn 0.2s ease;
 }
 
-/* Само окошко по центру */
 .modal-content {
   background: #292828;
   border: 1px solid #333;
@@ -339,14 +330,12 @@
   margin-bottom: 25px;
 }
 
-/* Контейнер для кнопок внутри модалки */
 .modal-buttons {
   display: flex;
   gap: 12px;
   justify-content: center;
 }
 
-/* Общие стили кнопок в модалке */
 .modal-btn {
   padding: 10px 20px;
   font-size: 15px;
@@ -358,7 +347,6 @@
   min-width: 100px;
 }
 
-/* Кнопка "Да, выйти" */
 .modal-btn-confirm {
   background: #dc3545;
   color: white;
@@ -367,7 +355,6 @@
   background: #bd2130;
 }
 
-/* Кнопка "Отмена" */
 .modal-btn-cancel {
   background: #3d3d3d;
   color: white;
@@ -376,7 +363,6 @@
   background: #555;
 }
 
-/* Простая анимация появления */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -387,24 +373,21 @@
 }
 
 .search-icon-svg {
-  color: #777; /* Цвет лупы по умолчанию */
+  color: #777;
   transition: color 0.2s ease;
 }
 
-/* Если хочешь, чтобы при наведении или вводе в инпут лупа подсвечивалась */
 .search-wrapper:focus-within .search-icon-svg {
   color: #fff;
 }
 
-/* ОБЯЗАТЕЛЬНО: добавь это свойство в твой текущий .search-wrapper */
 .search-wrapper {
   position: relative;
 }
 
-/* Контейнер выпадающего списка */
 .search-dropdown {
   position: absolute;
-  top: calc(100% + 8px); /* Появляется чуть ниже инпута */
+  top: calc(100% + 8px);
   left: 0;
   width: 100%;
   background: #1e1e1e;
@@ -417,7 +400,6 @@
   padding: 5px 0;
 }
 
-/* Каждая строчка результата (карточка пространства) */
 .search-dropdown-item {
   padding: 12px 15px;
   cursor: pointer;
@@ -432,12 +414,10 @@
   border-bottom: none;
 }
 
-/* Эффект наведения на результат */
 .search-dropdown-item:hover {
   background: #292828;
 }
 
-/* Верхняя строка внутри элемента (Имя + Теги) */
 .search-item-header {
   display: flex;
   justify-content: space-between;
@@ -451,7 +431,6 @@
   font-size: 15px;
 }
 
-/* Теги в поиске */
 .search-item-tags {
   display: flex;
   gap: 6px;
@@ -460,14 +439,13 @@
 
 .search-item-tag {
   background: #3d3d3d;
-  color: #007bff; /* Красивый синий акцент */
+  color: #007bff;
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
 }
 
-/* Описание пространства в поиске */
 .search-item-description {
   margin: 0;
   color: #aaa;
@@ -475,10 +453,9 @@
   line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Если описание длинное, оно плавно обрежется троеточием */
+  text-overflow: ellipsis;
 }
 
-/* Кастомизация скроллбара внутри дропдауна */
 .search-dropdown::-webkit-scrollbar {
   width: 6px;
 }

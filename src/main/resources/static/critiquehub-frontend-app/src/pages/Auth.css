@@ -1,25 +1,22 @@
-/* Контейнер на всю страницу */
 .auth-container {
   display: flex;
-  justify-content: center; /* Центрирует форму по горизонтали */
-  align-items: center;     /* Центрирует форму по вертикали */
-  min-height: calc(100vh - 80px); /* Занимает всю высоту экрана минус примерная высота Хедера */
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
   width: 100%;
   box-sizing: border-box;
   padding: 20px;
 }
 
-/* Сама форма (чтобы она не растягивалась на весь экран) */
 .auth-form {
-  background: #292828; /* Твой темный фон (замени на свой цвет, если нужно) */
+  background: #292828;
   padding: 40px;
   border-radius: 8px;
   width: 100%;
-  max-width: 400px; /* Ограничивает ширину формы, чтобы она выглядела аккуратно */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Легкая тень для объема */
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Элементы внутри формы */
 .form-group {
   margin-bottom: 20px;
   display: flex;
@@ -42,7 +39,7 @@
 .auth-submit-btn {
   width: 100%;
   padding: 12px;
-  background-color: #007bff; /* Твой цвет кнопки */
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
@@ -61,18 +58,15 @@
   text-align: center;
 }
 
-/* Центрируем заголовок */
 .auth-title {
   text-align: center;
   margin-bottom: 25px;
   color: #fff;
 }
 
-/* Стили для ошибки под паролем */
 .auth-error-message {
   color: #ff4d4d;
   font-size: 14px;
-  margin-top: -5px;     /* Слегка подтягиваем к полю пароля */
-  margin-bottom: 20px;  /* Делаем отступ до кнопки */
-  text-align: left;     /* Выравниваем по левому краю, как и инпуты */
-}
+  margin-top: -5px;
+  margin-bottom: 20px;
+  text-align: left;

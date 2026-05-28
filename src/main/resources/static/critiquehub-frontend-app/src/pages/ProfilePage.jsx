@@ -11,14 +11,11 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const userId = user?.id || user?.userId;
 
-  // Состояния для данных
   const [mySpaces, setMySpaces] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
-  // Состояние интерфейса
-  const [activeTab, setActiveTab] = useState("spaces"); // 'spaces', 'favorites', 'settings'
+  const [activeTab, setActiveTab] = useState("spaces");
 
-  // Состояния форм
   const [spaceForm, setSpaceForm] = useState({ name: "", description: "", tagNames: "" });
   const [editingSpaceId, setEditingSpaceId] = useState(null);
   const [profileForm, setProfileForm] = useState({
@@ -27,10 +24,8 @@ export default function ProfilePage() {
     password: ""
   });
 
-  // Состояние модального окна подтверждения удаления
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, type: null, id: null, title: "" });
 
-  // Загрузка данных при монтировании
   useEffect(() => {
     if (!userId) {
       navigate("/login");
@@ -58,15 +53,12 @@ export default function ProfilePage() {
       .catch(err => console.error("Ошибка загрузки избранного:", err));
   };
 
-  // --- ЛОГИКА ПРОСТРАНСТВ ---
-
   const handleSpaceSubmit = (e) => {
     e.preventDefault();
     const payload = {
       name: spaceForm.name,
       description: spaceForm.description,
       ownerId: userId,
-      // Превращаем строку "java, backend" в массив ["java", "backend"]
       tagNames: spaceForm.tagNames.split(",").map(t => t.trim()).filter(Boolean)
     };
 
@@ -107,15 +99,11 @@ export default function ProfilePage() {
       .catch(err => console.error("Ошибка удаления пространства:", err));
   };
 
-  // --- ЛОГИКА ИЗБРАННОГО ---
-
   const handleRemoveFavorite = (spaceId) => {
     apiClient.delete(`/users/${userId}/favorites/${spaceId}`)
       .then(() => fetchFavorites())
       .catch(err => console.error("Ошибка удаления из избранного:", err));
   };
-
-  // --- ЛОГИКА АККАУНТА ---
 
   const handleProfileSubmit = (e) => {
     e.preventDefault();
@@ -136,8 +124,6 @@ export default function ProfilePage() {
       })
       .catch(err => console.error("Ошибка удаления аккаунта:", err));
   };
-
-  // --- МОДАЛЬНОЕ ОКНО ---
 
   const openDeleteModal = (type, id, title) => {
     setDeleteModal({ isOpen: true, type, id, title });
@@ -170,7 +156,6 @@ export default function ProfilePage() {
 
       <div className="profile-content">
 
-        {/* ВКЛАДКА 1: ПРОСТРАНСТВА */}
         {activeTab === "spaces" && (
           <div className="tab-section">
             <h2>{editingSpaceId ? "Редактировать пространство" : "Создать новое пространство"}</h2>
@@ -224,7 +209,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* ВКЛАДКА 2: ИЗБРАННОЕ */}
         {activeTab === "favorites" && (
           <div className="tab-section">
             <h2>Избранные пространства</h2>
@@ -241,7 +225,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* ВКЛАДКА 3: НАСТРОЙКИ АККАУНТА */}
         {activeTab === "settings" && (
           <div className="tab-section">
             <h2>Редактирование профиля</h2>
@@ -281,7 +264,6 @@ export default function ProfilePage() {
 
       </div>
 
-      {/* МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ */}
       {deleteModal.isOpen && (
         <div className="modal-overlay">
           <div className="modal-content">

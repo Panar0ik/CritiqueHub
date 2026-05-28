@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "./Auth.css"; // Используем те же стили, что и для логина
+import "./Auth.css";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 const apiClient = axios.create({ baseURL: API_BASE_URL });
@@ -21,13 +21,11 @@ const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
-    // 1. Валидация Username (от 3 до 50 символов)
     if (username.length < 3 || username.length > 50) {
       setError("Имя пользователя должно быть от 3 до 50 символов");
       return;
     }
 
-    // 2. Валидация Пароля под требования бэкенда (минимум 8 символов)
     if (password.length < 8) {
       setError("Пароль не должен быть меньше 8 символов");
       return;

@@ -33,10 +33,8 @@ export default function LoginPage() {
     } catch (err) {
       console.error("Ошибка при входе:", err);
 
-      // Получаем текст ошибки от бэкенда (из валидации Spring Boot)
       const serverMessage = err.response?.data?.message || "";
 
-      // Проверяем английские сообщения и переводим их на русский
       if (serverMessage.includes("Email is required")) {
         setError("Пожалуйста, введите Email.");
       } else if (serverMessage.includes("Email should be valid")) {
