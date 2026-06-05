@@ -30,55 +30,76 @@ export default function SpacePage() {
     if (container) container.scrollTop = container.scrollHeight;
   };
 
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const res = await apiClient.get(`/messages/space/${spaceId}`);
-        const sorted = [...res.data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+useEffect(() => {
+  if (!spaceId) return;
 
-        const messagesWithAttachments = await Promise.all(
-          sorted.map(async (msg) => {
-            try {
-              const attachRes = await apiClient.get(`/attachments/message/${msg.id}`);
-              return { ...msg, attachments: attachRes.data || [] };
-            } catch {
-              return { ...msg, attachments: [] };
-            }
-          })
-        );
+  const fetchMessages = async () => {
+    try {
+      const res = await apiClient.get(`/messages/space/${spaceId}`);
+      const sorted = [...res.data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-        setMessages(prev => {
-          if (JSON.stringify(prev) === JSON.stringify(messagesWithAttachments)) return prev;
-
-          const container = messagesBoxRef.current;
-          if (container) {
-            const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-            if (distanceFromBottom > 200 && prev.length > 0) return messagesWithAttachments;
+      const messagesWithAttachments = await Promise.all(
+        sorted.map(async (msg) => {
+          try {
+            const attachRes = await apiClient.get(`/attachments/message/${msg.id}`);
+            return { ...msg, attachments: attachRes.data || [] };
+          } catch {
+            return { ...msg, attachments: [] };
           }
-          setTimeout(forceScrollToBottom, 30);
-          return messagesWithAttachments;
-        });
-      } catch (err) {
-        console.error("Ошибка обновления сообщений:", err);
+        })
+      );
+
+      setMessages(prev => {
+        if (JSON.stringify(prev) === JSON.stringify(messagesWithAttachments)) return prev;
+
+        const container = messagesBoxRef.current;
+        if (container) {
+          const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+          if (distanceFromBottom > 200 && prev.length > 0) return messagesWithAttachments;
+        }
+        setTimeout(forceScrollToBottom, 30);
+        return messagesWithAttachments;
+      });
+    } catch (err) {
+      console.error("Ошибка обновления сообщений:", err);
+    }
+  };
+
+  apiClient.get(`/spaces/${spaceId}`)
+    .then(res => setSpaceInfo(res.data))
+    .catch(err => console.error("Ошибка загрузки пространства:", err));
+
+  if (userId) {
+    apiClient.get(`/users/${userId}/favorites`)
+      .then(res => setFavorites(res.data))
+      .catch(err => console.error("Ошибка загрузки избранного:", err));
+  }
+
+  fetchMessages();
+  setLoading(false);
+
+  let ws = null;
+  const connectTimer = setTimeout(() => {
+    ws = new WebSocket(`ws://localhost:8080/api/ws/spaces?spaceId=${spaceId}`);
+
+    ws.onmessage = (event) => {
+      const socketData = JSON.parse(event.data);
+
+      if (socketData.type === "UPDATE_MESSAGES") {
+        fetchMessages();
+      } else if (socketData.type === "NEW_MESSAGE") {
+        fetchMessages();
       }
     };
+  }, 100);
 
-    apiClient.get(`/spaces/${spaceId}`)
-      .then(res => setSpaceInfo(res.data))
-      .catch(err => console.error("Ошибка загрузки пространства:", err));
-
-    if (userId) {
-      apiClient.get(`/users/${userId}/favorites`)
-        .then(res => setFavorites(res.data))
-        .catch(err => console.error("Ошибка загрузки избранного:", err));
+  return () => {
+    clearTimeout(connectTimer);
+    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+      ws.close();
     }
-
-    fetchMessages();
-    setLoading(false);
-
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
-  }, [spaceId, userId]);
+  };
+}, [spaceId, userId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -94,7 +115,7 @@ export default function SpacePage() {
 
     try {
       if (editingMessage) {
-        await apiClient.put(`/messages/${editingMessage.id}`, JSON.stringify(textToSend), {
+        await apiClient.put(`/messages/${editingMessage.id}?spaceId=${spaceId}`, JSON.stringify(textToSend), {
           headers: { "Content-Type": "application/json" }
         });
 
@@ -120,7 +141,7 @@ export default function SpacePage() {
           try {
             const attachResponse = await apiClient.post("/attachments", {
               url: currentAttachment,
-              messageId: createdMessage.id
+              messageId: Number(createdMessage.id)
             });
             createdMessage.attachments.push(attachResponse.data);
           } catch (attachErr) {
@@ -142,7 +163,7 @@ export default function SpacePage() {
   const handleDeleteMessage = async (messageId) => {
     if (!window.confirm("Вы уверены, что хотите удалить это сообщение?")) return;
     try {
-      await apiClient.delete(`/messages/${messageId}`);
+      await apiClient.delete(`/messages/${messageId}?spaceId=${spaceId}`);
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
     } catch (err) {
       console.error("Не удалось удалить сообщение:", err);
@@ -226,7 +247,7 @@ export default function SpacePage() {
             ) : (
               messages.map((msg) => (
                 <MessageItem
-                  key={msg.id ? `id-${msg.id}` : `rand-${Math.random()}`}
+                  key={msg.id}
                   msg={msg}
                   currentUser={user}
                   onDelete={handleDeleteMessage}
