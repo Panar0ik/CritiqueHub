@@ -9,6 +9,8 @@ import java.util.Map;
 
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
+    private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketHandshakeInterceptor.class);
+
     @Override
     public boolean beforeHandshake(final ServerHttpRequest request,
                                    final ServerHttpResponse response,
@@ -25,5 +27,17 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
                                final ServerHttpResponse response,
                                final WebSocketHandler wsHandler,
                                final Exception exception) {
+        if (exception != null) {
+            log.error(
+                    "Критическая ошибка при установлении WebSocket соединения: {}",
+                    exception.getMessage(),
+                    exception
+            );
+        } else {
+            log.debug(
+                    "WebSocket handshake успешно завершен для адреса: {}",
+                    request.getRemoteAddress()
+            );
+        }
     }
 }

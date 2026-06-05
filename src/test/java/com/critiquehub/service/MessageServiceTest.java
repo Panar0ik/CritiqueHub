@@ -10,13 +10,18 @@ import com.critiquehub.repository.MessageRepository;
 import com.critiquehub.repository.SpaceRepository;
 import com.critiquehub.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +42,21 @@ class MessageServiceTest {
     @Mock
     private MessageMapper messageMapper;
 
+    private final Instant fixedInstant = Instant.parse("2026-06-05T02:00:00Z");
+    private final ZoneId zoneId = ZoneId.of("UTC");
+
+    @Spy
+    private Clock clock = Clock.fixed(fixedInstant, zoneId);
+
     @InjectMocks
     private MessageService messageService;
+
+    private LocalDateTime fixedDateTime;
+
+    @BeforeEach
+    void setUp() {
+        fixedDateTime = LocalDateTime.now(clock);
+    }
 
     @Test
     void sendMessage_Success() {
@@ -47,7 +65,8 @@ class MessageServiceTest {
         Space space = new Space();
         Message message = new Message();
         Message savedMessage = new Message();
-        MessageResponseDto expected = new MessageResponseDto(1L, "Hello", LocalDateTime.now(), "user", List.of());
+
+        MessageResponseDto expected = new MessageResponseDto(1L, "Hello", fixedDateTime, "user", List.of());
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(spaceRepository.findById(1L)).thenReturn(Optional.of(space));
@@ -59,6 +78,7 @@ class MessageServiceTest {
 
         assertNotNull(result);
         assertEquals("Hello", result.text());
+        assertEquals(fixedDateTime, result.timestamp());
         verify(messageRepository).save(message);
     }
 
@@ -83,7 +103,7 @@ class MessageServiceTest {
     void getMessagesBySpace_Success() {
         Long spaceId = 1L;
         Message message = new Message();
-        MessageResponseDto dto = new MessageResponseDto(1L, "text", LocalDateTime.now(), "u", List.of());
+        MessageResponseDto dto = new MessageResponseDto(1L, "text", fixedDateTime, "u", List.of());
 
         when(messageRepository.findBySpaceId(spaceId)).thenReturn(List.of(message));
         when(messageMapper.toDto(message)).thenReturn(dto);
@@ -99,10 +119,10 @@ class MessageServiceTest {
         Long id = 1L;
         String newContent = "updated";
         Message message = new Message();
-        MessageResponseDto expected = new MessageResponseDto(1L, newContent, LocalDateTime.now(), "u", List.of());
+        MessageResponseDto expected = new MessageResponseDto(1L, newContent, fixedDateTime, "u", List.of());
 
         when(messageRepository.findById(id)).thenReturn(Optional.of(message));
-        when(messageRepository.save(message)).thenReturn(message);
+
         when(messageMapper.toDto(message)).thenReturn(expected);
 
         MessageResponseDto result = messageService.updateMessage(id, newContent);

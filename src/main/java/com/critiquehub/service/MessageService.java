@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -39,7 +40,7 @@ public class MessageService {
 
         message.setUser(user);
         message.setSpace(space);
-        message.setTimestamp(LocalDateTime.now());
+        message.setTimestamp(LocalDateTime.now(ZoneOffset.UTC));
 
         Message savedMessage = messageRepository.save(message);
         return messageMapper.toDto(savedMessage);

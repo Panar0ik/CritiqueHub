@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -37,7 +38,7 @@ public class OperationService {
                 .id(id)
                 .name(opName)
                 .state("START")
-                .updatedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
         repository.save(op);
         return id;
