@@ -1,6 +1,7 @@
 package com.critiquehub.util.async;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +20,16 @@ public class OperationService {
     private final OperationRepository repository;
     private final Executor taskExecutor;
 
+    private final OperationService self;
+
     public OperationService(
             final OperationRepository repositoryP,
-            final @Qualifier("taskExecutor") Executor ptaskExecutorP
+            final @Qualifier("taskExecutor") Executor ptaskExecutorP,
+            final @Lazy OperationService selfP
     ) {
         this.repository = repositoryP;
         this.taskExecutor = ptaskExecutorP;
+        this.self = selfP;
     }
 
     @Transactional
@@ -53,17 +58,17 @@ public class OperationService {
             try {
                 log.info("[ASYNC-START] Task ID: {} started in background thread: {}", id, currentThreadName);
 
-                update(id, "IN_PROGRESS", "Task started");
+                self.update(id, "IN_PROGRESS", "Task started");
 
                 task.run();
 
                 log.info("[ASYNC-SUCCESS] Task ID: {} completed successfully in thread: {}", id, currentThreadName);
-                update(id, "COMPLETED", "Success");
+                self.update(id, "COMPLETED", "Success");
 
             } catch (Exception e) {
                 log.error("[ASYNC-ERROR] Task ID: {} failed in thread: {}. Reason: {}",
                         id, currentThreadName, e.getMessage(), e);
-                update(id, "ERROR", e.getMessage());
+                self.update(id, "ERROR", e.getMessage());
             }
         }, taskExecutor);
     }
@@ -76,7 +81,7 @@ public class OperationService {
                 op -> {
                     op.setState(state);
                     op.setPayload(payload);
-                    op.setUpdatedAt(LocalDateTime.now());
+                    op.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
                     repository.save(op);
                 },
                 () -> log.warn("[ASYNC-WARN] Attempted to update non-existent operation with ID: {}", id)

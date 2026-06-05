@@ -8,6 +8,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.CompletionException;
 
 @Aspect
@@ -45,7 +46,7 @@ public class AsyncAspect {
     private void updateOperationState(final String opId, final String state) {
         operationRepository.findById(opId).ifPresent(operation -> {
             operation.setState(state);
-            operation.setUpdatedAt(LocalDateTime.now());
+            operation.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
             operationRepository.save(operation);
         });
     }
