@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -32,7 +33,17 @@ public class OperationService {
         this.self = selfP;
     }
 
-    @Transactional
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateOperationState(final String opId, final String state) {
+        repository.findById(opId).ifPresent(operation -> {
+            operation.setState(state);
+            operation.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+            repository.saveAndFlush(operation);
+        });
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String register(final String opName) {
         String id = UUID.randomUUID().toString();
 
@@ -68,7 +79,7 @@ public class OperationService {
             } catch (Exception e) {
                 log.error("[ASYNC-ERROR] Task ID: {} failed in thread: {}. Reason: {}",
                         id, currentThreadName, e.getMessage(), e);
-                self.update(id, "ERROR", e.getMessage());
+                self.update(id, "FAILED", e.getMessage());
             }
         }, taskExecutor);
     }

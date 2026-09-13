@@ -7,8 +7,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.concurrent.CompletionException;
 
 @Aspect
@@ -17,7 +15,6 @@ import java.util.concurrent.CompletionException;
 public class AsyncAspect {
 
     private final OperationService operationService;
-    private final OperationRepository operationRepository;
 
     @Around("@annotation(com.critiquehub.util.async.ApplyAsync)")
     public Object handleAsync(final ProceedingJoinPoint joinPoint) throws Throwable {
@@ -27,27 +24,20 @@ public class AsyncAspect {
 
         final String opId = operationService.register(opName);
 
+
         operationService.runTask(opId, () -> {
             try {
-                updateOperationState(opId, "PROCESSING");
+            operationService.updateOperationState(opId, "PROCESSING");
 
                 joinPoint.proceed();
 
-                updateOperationState(opId, "COMPLETED");
+                operationService.updateOperationState(opId, "COMPLETED");
             } catch (Throwable e) {
-                updateOperationState(opId, "FAILED");
+                operationService.updateOperationState(opId, "FAILED");
                 throw new CompletionException("Async task failed: " + opId, e);
             }
         });
 
         return opId;
-    }
-
-    private void updateOperationState(final String opId, final String state) {
-        operationRepository.findById(opId).ifPresent(operation -> {
-            operation.setState(state);
-            operation.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
-            operationRepository.save(operation);
-        });
     }
 }

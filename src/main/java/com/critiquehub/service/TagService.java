@@ -128,7 +128,7 @@ public class TagService {
                 })
                 .toList();
 
-        final long debugSleepMillis = 5000L;
+        final long debugSleepMillis = 10000L;
         try {
             Thread.sleep(debugSleepMillis);
         } catch (InterruptedException e) {
@@ -136,14 +136,10 @@ public class TagService {
             throw new IllegalStateException("The background waiting thread was interrupted", e);
         }
 
-        try {
             tagRepository.saveAll(tagsToSave);
             spaceRepository.save(space);
 
             log.info("[Bulk Task] Successfully saved {} tags and linked to space {}", tagsToSave.size(), spaceId);
-        } catch (Exception e) {
-            log.error("[Bulk Task] FATAL ERROR during DB save: ", e);
-        }
 
         return null;
     }
